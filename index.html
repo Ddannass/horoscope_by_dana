@@ -8,8 +8,12 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Astro Day" />
   <title>Astro Day</title>
+
+  <link rel="manifest" href="/horoscope_by_dana/assets/manifest.webmanifest" />
+  <link rel="apple-touch-icon" href="/horoscope_by_dana/assets/icon-192.png" />
   <link rel="preconnect" href="https://api.fontshare.com" />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=zodiak@400,700&display=swap" rel="stylesheet" />
+
   <style>
     :root,[data-theme="light"] {
       --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
@@ -26,6 +30,7 @@
       --shadow-sm:0 1px 2px rgba(0,0,0,.06); --shadow-md:0 10px 30px rgba(0,0,0,.08);
       --font-body:'Satoshi', system-ui, sans-serif; --font-display:'Zodiak', Georgia, serif;
     }
+
     [data-theme="dark"] {
       --color-bg:#171614; --color-surface:#1c1b19; --color-surface-2:#201f1d; --color-surface-offset:#22211f; --color-border:#393836;
       --color-text:#e1dfdb; --color-text-muted:#aaa7a1; --color-text-faint:#6d6a64; --color-text-inverse:#2b2a28;
@@ -33,32 +38,60 @@
       --color-panel: color-mix(in oklab, var(--color-primary) 8%, var(--color-surface));
       --shadow-sm:0 1px 2px rgba(0,0,0,.2); --shadow-md:0 10px 30px rgba(0,0,0,.3);
     }
+
     *,*::before,*::after{box-sizing:border-box}
     html{-webkit-text-size-adjust:none;text-size-adjust:none}
     body,h1,h2,h3,p{margin:0}
     body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);line-height:1.6;background:var(--color-bg);color:var(--color-text)}
     button{font:inherit;border:0;background:none;color:inherit}
     a,button{transition:.18s ease}
+
     .app{max-width:760px;margin:0 auto;padding:max(20px, env(safe-area-inset-top)) var(--space-4) max(24px, env(safe-area-inset-bottom));}
     .skip{position:absolute;left:-9999px}
     .skip:focus{left:12px;top:12px;background:var(--color-surface);padding:8px 12px;border-radius:10px}
+
     .topbar{display:flex;align-items:center;justify-content:space-between;gap:var(--space-4);margin-bottom:var(--space-8)}
     .brand{display:flex;align-items:center;gap:.9rem}
     .logo{width:40px;height:40px;color:var(--color-primary)}
     .brand-title{font:700 var(--text-lg)/1.1 var(--font-display)}
     .brand-note{font-size:var(--text-xs);color:var(--color-text-muted);letter-spacing:.08em;text-transform:uppercase}
-    .icon-btn{min-width:44px;min-height:44px;padding:10px;border-radius:var(--radius-full);background:var(--color-surface);border:1px solid color-mix(in oklab, var(--color-text) 12%, transparent);box-shadow:var(--shadow-sm)}
-    .hero,.card,.install-tip{background:var(--color-surface);border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm)}
-    .hero{padding:var(--space-6);margin-bottom:var(--space-6);background:linear-gradient(180deg,var(--color-panel),var(--color-surface))}
-    .eyebrow{display:inline-flex;gap:.45rem;align-items:center;padding:.35rem .7rem;border-radius:var(--radius-full);font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;background:var(--color-primary-highlight);color:var(--color-primary);margin-bottom:var(--space-4)}
+
+    .icon-btn{
+      min-width:44px;min-height:44px;padding:10px;border-radius:var(--radius-full);
+      background:var(--color-surface);
+      border:1px solid color-mix(in oklab, var(--color-text) 12%, transparent);
+      box-shadow:var(--shadow-sm)
+    }
+
+    .hero,.card,.install-tip{
+      background:var(--color-surface);
+      border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent);
+      border-radius:var(--radius-lg);
+      box-shadow:var(--shadow-sm)
+    }
+
+    .hero{
+      padding:var(--space-6);
+      margin-bottom:var(--space-6);
+      background:linear-gradient(180deg,var(--color-panel),var(--color-surface))
+    }
+
+    .eyebrow{
+      display:inline-flex;gap:.45rem;align-items:center;padding:.35rem .7rem;border-radius:var(--radius-full);
+      font-size:var(--text-xs);text-transform:uppercase;letter-spacing:.08em;
+      background:var(--color-primary-highlight);color:var(--color-primary);margin-bottom:var(--space-4)
+    }
+
     h1{font:700 var(--text-xl)/1.05 var(--font-display);margin-bottom:var(--space-3)}
     .lede{color:var(--color-text-muted);max-width:34ch}
     .meta{display:flex;flex-wrap:wrap;gap:.75rem 1rem;margin-top:var(--space-5);font-size:var(--text-sm);color:var(--color-text-muted)}
-    .actions{display:flex;gap:.75rem;margin:var(--space-6) 0 var(--space-4)}
+    .actions{display:flex;gap:.75rem;flex-wrap:wrap;margin:var(--space-6) 0 var(--space-4)}
+
     .btn{min-height:44px;padding:.85rem 1rem;border-radius:999px;font-size:var(--text-sm);font-weight:700}
     .btn-primary{background:var(--color-primary);color:var(--color-text-inverse)}
     .btn-primary:hover{background:var(--color-primary-hover)}
     .btn-secondary{background:var(--color-surface-2);border:1px solid color-mix(in oklab, var(--color-text) 10%, transparent)}
+
     .grid{display:grid;gap:var(--space-4)}
     .card{padding:var(--space-5)}
     .card-head{display:flex;justify-content:space-between;align-items:start;gap:1rem;margin-bottom:var(--space-4)}
@@ -68,15 +101,22 @@
     .forecast{font-size:var(--text-base)}
     .mood{margin-top:var(--space-4);display:flex;align-items:center;gap:.6rem;color:var(--color-text-muted);font-size:var(--text-sm)}
     .dot{width:10px;height:10px;border-radius:50%;background:var(--color-gold)}
+
     .install-tip{margin-top:var(--space-6);padding:var(--space-5)}
     .install-tip h2{font-size:var(--text-lg);margin-bottom:.4rem}
     .install-tip p{color:var(--color-text-muted)}
     .footer{padding:var(--space-6) 0;color:var(--color-text-faint);font-size:var(--text-xs)}
-    @media (min-width:700px){.grid{grid-template-columns:1fr 1fr}.hero{padding:var(--space-8)}}
+    .hidden{display:none}
+
+    @media (min-width:700px){
+      .grid{grid-template-columns:1fr 1fr}
+      .hero{padding:var(--space-8)}
+    }
   </style>
 </head>
 <body>
 <a class="skip" href="#content">К содержимому</a>
+
 <div class="app">
   <header class="topbar">
     <div class="brand">
@@ -88,11 +128,14 @@
       </svg>
       <div>
         <div class="brand-title">Astro Day</div>
-        <div class="brand-note">Веб-приложение</div>
+        <div class="brand-note">PWA для телефона</div>
       </div>
     </div>
-    <button class="icon-btn" data-theme-toggle aria-label="Switch theme">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+
+    <button class="icon-btn" data-theme-toggle aria-label="Переключить тему">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+      </svg>
     </button>
   </header>
 
@@ -100,13 +143,16 @@
     <section class="hero">
       <div class="eyebrow">Сегодняшний прогноз</div>
       <h1>Два знака, один спокойный экран.</h1>
-      <p class="lede">Сначала добиваемся нормального открытия с домашнего экрана iPhone. Потом уже можно будет возвращать полноценную PWA-механику.</p>
+      <p class="lede">Это пробная версия PWA-приложения: его можно открыть на телефоне и установить на главный экран как обычное приложение.</p>
+
       <div class="meta">
         <span id="todayDate">Дата</span>
-        <span>Версия без service worker</span>
+        <span id="installStatus">Проверяем доступность установки…</span>
       </div>
+
       <div class="actions">
         <button class="btn btn-primary" id="refreshBtn">Обновить текст</button>
+        <button class="btn btn-secondary hidden" id="installBtn">Установить</button>
       </div>
     </section>
 
@@ -136,22 +182,25 @@
       </article>
     </section>
 
-    <section class="install-tip">
-      <h2>Как проверить на iPhone</h2>
-      <p>Открой сайт в Safari, потом выбери «Поделиться» → «На экран Домой». Если эта версия заработает без 404, значит ломал именно manifest или service worker.</p>
+    <section class="install-tip" id="installTip">
+      <h2>Как поставить на телефон</h2>
+      <p>На Android после загрузки сайта может появиться кнопка установки. Если её нет, открой меню браузера и выбери установку приложения. На iPhone открой в Safari, затем «Поделиться» → «На экран Домой».</p>
     </section>
   </main>
 
-  <footer class="footer">После проверки можно будет вернуть PWA-поддержку уже аккуратно и без сломанного запуска.</footer>
+  <footer class="footer">Версия для GitHub Pages с поддержкой установки на Android и добавления на экран Домой на iPhone.</footer>
 </div>
 
 <script>
 (() => {
   const root = document.documentElement;
   const themeBtn = document.querySelector('[data-theme-toggle]');
+  const installBtn = document.getElementById('installBtn');
   const refreshBtn = document.getElementById('refreshBtn');
+  const installStatus = document.getElementById('installStatus');
   const todayDate = document.getElementById('todayDate');
 
+  let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   root.setAttribute('data-theme', theme);
 
@@ -192,6 +241,50 @@
     document.getElementById('capricornText').textContent = c[0];
     document.getElementById('capricornMood').textContent = c[1];
   });
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.classList.remove('hidden');
+    installStatus.textContent = 'Можно установить на Android';
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      installStatus.textContent = 'Если кнопка не появилась, открой меню браузера и выбери установку вручную';
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+
+    if (choice.outcome === 'accepted') {
+      installStatus.textContent = 'Приложение устанавливается';
+    } else {
+      installStatus.textContent = 'Установка отменена';
+    }
+
+    deferredPrompt = null;
+    installBtn.classList.add('hidden');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installStatus.textContent = 'Приложение установлено';
+    installBtn.classList.add('hidden');
+  });
+
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/horoscope_by_dana/assets/sw.js', {
+        scope: '/horoscope_by_dana/'
+      }).then(() => {
+        console.log('Service Worker registered');
+      }).catch((error) => {
+        console.error('Service Worker registration failed:', error);
+        installStatus.textContent = 'Сайт работает, но offline-кэш не подключился';
+      });
+    });
+  }
 })();
 </script>
 </body>
