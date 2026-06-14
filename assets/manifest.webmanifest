@@ -2,14 +2,15 @@
   "name": "Astro Day",
   "short_name": "Astro Day",
   "description": "Мини PWA с ежедневным экраном гороскопа для Скорпиона и Козерога.",
-  "start_url": "./index.html",
+  "start_url": "/horoscope_by_dana/",
+  "scope": "/horoscope_by_dana/",
   "display": "standalone",
   "background_color": "#f7f6f2",
   "theme_color": "#01696f",
   "lang": "ru",
   "icons": [
     {
-      "src": "./assets/icon.svg",
+      "src": "/horoscope_by_dana/assets/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any maskable"
