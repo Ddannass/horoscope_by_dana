@@ -1,12 +1,10 @@
-const CACHE_NAME = 'astro-day-v2';
-const APP_PREFIX = '/horoscope_by_dana';
-
+const CACHE_NAME = 'astro-day-v3';
 const URLS_TO_CACHE = [
-  `${APP_PREFIX}/`,
-  `${APP_PREFIX}/index.html`,
-  `${APP_PREFIX}/assets/manifest.webmanifest`,
-  `${APP_PREFIX}/assets/icon-192.png`,
-  `${APP_PREFIX}/assets/icon-512.png`
+  './',
+  './index.html',
+  './assets/manifest.webmanifest',
+  './assets/icon-192.png',
+  './assets/icon-512.png'
 ];
 
 self.addEventListener('install', (event) => {
@@ -37,20 +35,18 @@ self.addEventListener('fetch', (event) => {
       if (cached) return cached;
 
       return fetch(event.request).then((response) => {
-        const responseClone = response.clone();
+        if (!response || response.status !== 200) return response;
 
-        if (
-          response.status === 200 &&
-          event.request.url.startsWith(self.location.origin + APP_PREFIX)
-        ) {
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseClone);
-          });
-        }
+        const responseClone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
+        });
 
         return response;
       }).catch(() => {
-        return caches.match(`${APP_PREFIX}/index.html`);
+        if (event.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
       });
     })
   );
