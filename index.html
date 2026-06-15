@@ -22,9 +22,10 @@
       --text:#28251d;
       --muted:#67655f;
       --primary:#01696f;
+      --primary-soft:rgba(1,105,111,.10);
       --border:#d4d1ca;
       --inv:#f9f8f4;
-      --r:14px;
+      --r:18px;
       --shadow:0 10px 28px rgba(0,0,0,.08);
     }
 
@@ -35,13 +36,14 @@
       --text:#cdccca;
       --muted:#a5a39f;
       --primary:#4f98a3;
+      --primary-soft:rgba(79,152,163,.14);
       --border:#393836;
       --inv:#2b2a28;
       --shadow:0 10px 28px rgba(0,0,0,.35);
     }
 
     * { box-sizing:border-box; }
-    html { -webkit-text-size-adjust:none; text-size-adjust:none; }
+    html { -webkit-text-size-adjust:none; text-size-adjust:none; scroll-behavior:smooth; }
 
     body {
       margin:0;
@@ -51,10 +53,11 @@
       min-height:100dvh;
     }
 
+    img { display:block; max-width:100%; height:auto; }
     button { font:inherit; }
 
     .app {
-      max-width:900px;
+      max-width:1100px;
       margin:auto;
       padding:16px;
       display:grid;
@@ -76,17 +79,23 @@
     }
 
     .brand img {
-      width:44px;
-      height:44px;
-      border-radius:12px;
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      box-shadow:var(--shadow);
     }
 
-    .card {
-      background:linear-gradient(180deg,var(--surface),var(--surface2));
-      border:1px solid var(--border);
-      border-radius:var(--r);
-      padding:20px;
-      box-shadow:var(--shadow);
+    .brand-title {
+      margin:0;
+      font-size:24px;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-subtitle {
+      color:var(--muted);
+      font-size:15px;
+      margin-top:4px;
     }
 
     .controls {
@@ -111,52 +120,171 @@
       color:var(--inv);
     }
 
-    .muted { color:var(--muted); }
-    .status { font-size:14px; }
-    .hint-title {
-      margin:0 0 8px;
-      font-size:22px;
-      line-height:1.2;
+    .card {
+      background:linear-gradient(180deg,var(--surface),var(--surface2));
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:20px;
+      box-shadow:var(--shadow);
     }
 
-    h1 {
-      margin:0 0 8px;
-      font-size:32px;
-      line-height:1.1;
-    }
-
-    p { margin:0 0 12px; }
-
-    .horoscope-card {
+    .hero {
       display:grid;
       gap:12px;
     }
 
-    .horoscope-head {
-      display:flex;
-      justify-content:space-between;
-      align-items:flex-start;
-      gap:12px;
+    h1 {
+      margin:0;
+      font-size:40px;
+      line-height:1.05;
+      letter-spacing:-0.03em;
     }
 
-    .badge {
-      min-height:32px;
+    h2 {
+      margin:0;
+      font-size:20px;
+      line-height:1.2;
+    }
+
+    p { margin:0; }
+
+    .muted { color:var(--muted); }
+    .status { font-size:14px; color:var(--muted); }
+
+    .today-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      min-height:34px;
       padding:6px 12px;
       border-radius:999px;
-      background:rgba(1, 105, 111, 0.10);
+      background:var(--primary-soft);
       color:var(--primary);
       border:1px solid var(--border);
       font-size:14px;
       white-space:nowrap;
     }
 
-    [data-theme="dark"] .badge {
-      background:rgba(79, 152, 163, 0.14);
+    .legend {
+      display:grid;
+      gap:8px;
     }
 
-    .horoscope-text {
-      margin-bottom:0;
-      white-space:pre-line;
+    .legend-grid {
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .legend-item {
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(255,255,255,.18);
+    }
+
+    [data-theme="dark"] .legend-item {
+      background:rgba(255,255,255,.03);
+    }
+
+    .signs-grid {
+      display:grid;
+      gap:16px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .sign-card {
+      display:grid;
+      gap:16px;
+    }
+
+    .sign-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .sign-name {
+      margin:0;
+      font-size:28px;
+      line-height:1.05;
+      letter-spacing:-0.02em;
+    }
+
+    .sign-dates {
+      color:var(--muted);
+      font-size:14px;
+      margin-top:6px;
+    }
+
+    .blocks {
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .block {
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(255,255,255,.20);
+      display:grid;
+      gap:8px;
+      min-height:150px;
+    }
+
+    [data-theme="dark"] .block {
+      background:rgba(255,255,255,.03);
+    }
+
+    .block-title {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:15px;
+      font-weight:700;
+    }
+
+    .block-dot {
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--primary);
+      flex:0 0 auto;
+    }
+
+    .block-text {
+      color:var(--text);
+      font-size:15px;
+      line-height:1.55;
+    }
+
+    .ios-hint {
+      display:grid;
+      gap:8px;
+    }
+
+    @media (max-width: 860px) {
+      .signs-grid,
+      .legend-grid,
+      .blocks {
+        grid-template-columns:1fr;
+      }
+
+      h1 {
+        font-size:34px;
+      }
+
+      .sign-name {
+        font-size:24px;
+      }
     }
   </style>
 </head>
@@ -164,64 +292,46 @@
 <div class="app">
   <div class="top">
     <div class="brand">
-      <img src="./assets/icon-192.png" alt="App icon" width="44" height="44">
+      <img src="./assets/icon-192.png" alt="App icon" width="52" height="52">
       <div>
-        <div style="font-size:24px;font-weight:700">Horoscope PWA</div>
-        <div class="muted">Гороскоп на сегодня для Скорпиона и Козерога</div>
+        <div class="brand-title">Horoscope PWA</div>
+        <div class="brand-subtitle">Ежедневные гороскопы для всех 12 знаков</div>
       </div>
     </div>
 
     <div class="controls">
       <button class="btn" id="themeBtn">Тема</button>
-      <button class="btn" id="refreshBtn">Проверить установку</button>
       <button class="btn primary" id="installBtn" hidden>Установить приложение</button>
     </div>
   </div>
 
-  <section class="card">
+  <section class="card hero">
     <h1>Гороскоп на сегодня</h1>
-    <p>
-      На Android Chrome кнопка появляется после события установки.
-      На iPhone установка идет через Safari → Поделиться → На экран Домой.
-    </p>
-    <div class="status" id="status">Статус: ожидание проверки.</div>
-  </section>
-
-  <section class="card">
-    <h2 class="hint-title">Ежедневный прогноз</h2>
     <p class="muted">
-      Прогнозы загружаются автоматически. Если перевод временно недоступен, может показаться исходный текст.
+      Все прогнозы генерируются прямо на сайте и автоматически меняются каждый день.
+      У каждого знака есть 4 блока: Любовь, Работа, Энергия и Совет дня.
     </p>
-  </section>
-
-  <section class="card horoscope-card">
-    <div class="horoscope-head">
-      <div>
-        <h2 class="hint-title">Скорпион</h2>
-        <div class="status" id="date-scorpio">Загрузка даты…</div>
-      </div>
-      <div class="badge">Сегодня</div>
+    <div class="today-row">
+      <div class="pill" id="todayLabel">Сегодня</div>
+      <div class="status" id="status">Статус: готовим прогнозы.</div>
     </div>
-    <p class="horoscope-text" id="text-scorpio">Загружаем гороскоп для Скорпиона…</p>
   </section>
 
-  <section class="card horoscope-card">
-    <div class="horoscope-head">
-      <div>
-        <h2 class="hint-title">Козерог</h2>
-        <div class="status" id="date-capricorn">Загрузка даты…</div>
-      </div>
-      <div class="badge">Сегодня</div>
+  <section class="card legend">
+    <h2>Что внутри каждого знака</h2>
+    <div class="legend-grid">
+      <div class="legend-item"><strong>Любовь</strong><br><span class="muted">Эмоции, отношения, внимание, разговоры и близость.</span></div>
+      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Дела, решения, деньги, задачи, переговоры и темп.</span></div>
+      <div class="legend-item"><strong>Энергия</strong><br><span class="muted">Состояние, фокус, ресурс, баланс и внутренний ритм.</span></div>
+      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Один короткий ориентир, на что опереться сегодня.</span></div>
     </div>
-    <p class="horoscope-text" id="text-capricorn">Загружаем гороскоп для Козерога…</p>
   </section>
 
-  <section class="card" id="iosHint" hidden>
-    <h2 class="hint-title">Как установить на iPhone</h2>
-    <p>
-      Открой сайт в Safari, нажми «Поделиться», затем выбери
-      «На экран Домой» / Add to Home Screen.
-    </p>
+  <section class="signs-grid" id="signsGrid"></section>
+
+  <section class="card ios-hint" id="iosHint" hidden>
+    <h2>Как установить на iPhone</h2>
+    <p>Открой сайт в Safari, нажми «Поделиться», затем выбери «На экран Домой» / Add to Home Screen.</p>
     <div class="status">Safari → Поделиться → На экран Домой</div>
   </section>
 </div>
@@ -230,16 +340,17 @@
 (() => {
   const root = document.documentElement;
   const themeBtn = document.getElementById('themeBtn');
-  const refreshBtn = document.getElementById('refreshBtn');
   const installBtn = document.getElementById('installBtn');
   const status = document.getElementById('status');
   const iosHint = document.getElementById('iosHint');
+  const signsGrid = document.getElementById('signsGrid');
+  const todayLabel = document.getElementById('todayLabel');
 
   let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   root.setAttribute('data-theme', theme);
 
-  const ua = window.navigator.userAgent.toLowerCase();
+  const ua = navigator.userAgent.toLowerCase();
   const isIOS = /iphone|ipad|ipod/.test(ua);
   const isInStandaloneMode =
     window.matchMedia('(display-mode: standalone)').matches ||
@@ -254,195 +365,340 @@
     status.textContent = 'Статус: ' + text;
   }
 
+  const signs = [
+    {
+      key:'aries',
+      name:'Овен',
+      dates:'21 марта — 19 апреля',
+      traits:['смелый','прямой','быстрый','инициативный'],
+      loveTone:['искренность','импульс','притяжение'],
+      workTone:['рывок','лидерство','действие'],
+      energyTone:['огонь','драйв','скорость']
+    },
+    {
+      key:'taurus',
+      name:'Телец',
+      dates:'20 апреля — 20 мая',
+      traits:['спокойный','надёжный','чувственный','практичный'],
+      loveTone:['нежность','верность','тактильность'],
+      workTone:['стабильность','план','результат'],
+      energyTone:['ровность','земная сила','ритм']
+    },
+    {
+      key:'gemini',
+      name:'Близнецы',
+      dates:'21 мая — 20 июня',
+      traits:['любопытный','общительный','лёгкий','гибкий'],
+      loveTone:['флирт','разговор','интерес'],
+      workTone:['идеи','связи','скорость мысли'],
+      energyTone:['подвижность','смена фокуса','живость']
+    },
+    {
+      key:'cancer',
+      name:'Рак',
+      dates:'21 июня — 22 июля',
+      traits:['чуткий','бережный','глубокий','интуитивный'],
+      loveTone:['забота','доверие','мягкость'],
+      workTone:['осторожность','чувство момента','внимание'],
+      energyTone:['внутренний ритм','восстановление','чувствительность']
+    },
+    {
+      key:'leo',
+      name:'Лев',
+      dates:'23 июля — 22 августа',
+      traits:['яркий','щедрый','уверенный','заметный'],
+      loveTone:['романтика','жест','тепло'],
+      workTone:['признание','сцена','лидерская подача'],
+      energyTone:['солнечность','тонус','воля']
+    },
+    {
+      key:'virgo',
+      name:'Дева',
+      dates:'23 августа — 22 сентября',
+      traits:['точный','разумный','собранный','наблюдательный'],
+      loveTone:['внимание к деталям','деликатность','честность'],
+      workTone:['порядок','аналитика','практика'],
+      energyTone:['дисциплина','чистый фокус','собранность']
+    },
+    {
+      key:'libra',
+      name:'Весы',
+      dates:'23 сентября — 22 октября',
+      traits:['гармоничный','дипломатичный','тонкий','обаятельный'],
+      loveTone:['баланс','красота','взаимность'],
+      workTone:['переговоры','сотрудничество','репутация'],
+      energyTone:['равновесие','эстетика','мягкая сила']
+    },
+    {
+      key:'scorpio',
+      name:'Скорпион',
+      dates:'23 октября — 21 ноября',
+      traits:['сильный','глубокий','магнитичный','проницательный'],
+      loveTone:['страсть','верность','честность без масок'],
+      workTone:['контроль','стратегия','влияние'],
+      energyTone:['концентрация','внутренний напор','выносливость']
+    },
+    {
+      key:'sagittarius',
+      name:'Стрелец',
+      dates:'22 ноября — 21 декабря',
+      traits:['свободный','оптимистичный','живой','прямолинейный'],
+      loveTone:['спонтанность','юмор','пространство'],
+      workTone:['масштаб','перспектива','рост'],
+      energyTone:['движение','вдохновение','лёгкость']
+    },
+    {
+      key:'capricorn',
+      name:'Козерог',
+      dates:'22 декабря — 19 января',
+      traits:['собранный','амбициозный','стойкий','надёжный'],
+      loveTone:['серьёзность','верность','поступки'],
+      workTone:['структура','цель','авторитет'],
+      energyTone:['выдержка','контроль','поступательный темп']
+    },
+    {
+      key:'aquarius',
+      name:'Водолей',
+      dates:'20 января — 18 февраля',
+      traits:['независимый','оригинальный','умный','нестандартный'],
+      loveTone:['свобода','дружба','искренность'],
+      workTone:['идеи','новаторство','видение'],
+      energyTone:['свежий взгляд','ментальная ясность','обновление']
+    },
+    {
+      key:'pisces',
+      name:'Рыбы',
+      dates:'19 февраля — 20 марта',
+      traits:['мечтательный','мягкий','интуитивный','сострадательный'],
+      loveTone:['эмпатия','тонкость','душевная связь'],
+      workTone:['воображение','гибкость','творческий подход'],
+      energyTone:['чувствительность','плавность','внутренний слух']
+    }
+  ];
+
+  const loveOpeners = [
+    'В любви сегодня важна',
+    'Личная сфера просит',
+    'В отношениях на первый план выходит',
+    'Сегодня сердце лучше всего откликается на',
+    'Романтический фон дня усиливает'
+  ];
+
+  const loveActions = [
+    'спокойная честность и ясный разговор.',
+    'маленький, но искренний жест.',
+    'внимание к нюансам настроения партнёра.',
+    'умение не торопить чувства.',
+    'готовность говорить прямо, но мягко.',
+    'живой интерес вместо догадок.',
+    'тепло, которое проявляется не словами, а поступками.',
+    'возможность сделать шаг навстречу без давления.'
+  ];
+
+  const workOpeners = [
+    'В работе день складывается вокруг',
+    'Деловая часть дня требует',
+    'Сегодня в задачах особенно поможет',
+    'Профессиональная сфера усиливает тему',
+    'Рабочий ритм строится через'
+  ];
+
+  const workActions = [
+    'приоритета и чёткой последовательности.',
+    'спокойного контроля над деталями.',
+    'быстрого ответа на меняющиеся условия.',
+    'уверенности в своей позиции.',
+    'разумной экономии сил и времени.',
+    'переговоров без лишней резкости.',
+    'точного решения, а не суеты.',
+    'одного главного шага вместо десяти мелких.'
+  ];
+
+  const energyOpeners = [
+    'По энергии день показывает',
+    'Внутренний ресурс сегодня держится на',
+    'Тело и настроение лучше всего отзываются на',
+    'Энергетика дня подсказывает',
+    'Твой ритм сегодня выигрывает от'
+  ];
+
+  const energyActions = [
+    'бережного темпа и коротких пауз.',
+    'движения без перегрузки.',
+    'сниженной спешки и чистого фокуса.',
+    'контакта с телом, а не только с мыслями.',
+    'ритма, в котором есть воздух.',
+    'смены активности и восстановления.',
+    'спокойного старта без резких рывков.',
+    'отказа от всего, что крадёт внимание.'
+  ];
+
+  const adviceOpeners = [
+    'Совет дня:',
+    'Сегодня полезно:',
+    'Главный ориентир:',
+    'Лучшее решение дня:',
+    'Небольшая подсказка:'
+  ];
+
+  const adviceActions = [
+    'не распыляться и держаться одной линии.',
+    'сначала прояснить, потом действовать.',
+    'не принимать близко всё, что сказано на эмоциях.',
+    'выбрать качество, а не скорость.',
+    'оставить пространство для импровизации.',
+    'вернуться к тому, что уже работает.',
+    'не недооценивать силу короткого разговора.',
+    'проверять интуицию фактами и наоборот.'
+  ];
+
+  const flavorPhrases = [
+    'Это даст ощущение собранности и внутренней опоры.',
+    'Так день пойдёт ровнее и спокойнее.',
+    'Именно в этом сегодня скрыт лучший результат.',
+    'Так будет проще почувствовать верный момент.',
+    'Это заметно снизит внутренний шум.',
+    'На такой почве легче удержать баланс.',
+    'Из этого может вырасти удачный поворот.',
+    'Так ты быстрее поймёшь, куда двигаться дальше.'
+  ];
+
+  function hashString(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    }
+    return Math.abs(h >>> 0);
+  }
+
+  function pick(arr, seed, offset = 0) {
+    return arr[(seed + offset) % arr.length];
+  }
+
+  function formatDateRu(date) {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  function createBlock(title, text) {
+    return `
+      <div class="block">
+        <div class="block-title">
+          <span class="block-dot"></span>
+          <span>${title}</span>
+        </div>
+        <div class="block-text">${text}</div>
+      </div>
+    `;
+  }
+
+  function buildText(sign, type, seedBase) {
+    const trait = pick(sign.traits, seedBase, 1);
+    const flavor = pick(flavorPhrases, seedBase, 2);
+
+    if (type === 'love') {
+      return `${pick(loveOpeners, seedBase)} ${pick(sign.loveTone, seedBase, 3)}. ${pick(loveActions, seedBase, 4)} Для знака ${sign.name.toLowerCase()} сегодня особенно сильна черта «${trait}». ${flavor}`;
+    }
+
+    if (type === 'work') {
+      return `${pick(workOpeners, seedBase)} ${pick(sign.workTone, seedBase, 5)}. ${pick(workActions, seedBase, 6)} Ставка на качество и выдержку принесёт больше, чем лишняя спешка. ${flavor}`;
+    }
+
+    if (type === 'energy') {
+      return `${pick(energyOpeners, seedBase)} ${pick(sign.energyTone, seedBase, 7)}. ${pick(energyActions, seedBase, 8)} Чем мягче ты распределишь силы, тем стабильнее будет весь день. ${flavor}`;
+    }
+
+    return `${pick(adviceOpeners, seedBase)} ${pick(adviceActions, seedBase, 9)} Для ${sign.name.toLowerCase()} это тот день, когда простое решение часто оказывается самым верным. ${flavor}`;
+  }
+
+  function renderSigns() {
+    const now = new Date();
+    const dateKey = now.toISOString().slice(0, 10);
+    todayLabel.textContent = `Сегодня • ${formatDateRu(now)}`;
+
+    const html = signs.map((sign, index) => {
+      const seed = hashString(`${dateKey}-${sign.key}-${index}`);
+      const loveText = buildText(sign, 'love', seed + 11);
+      const workText = buildText(sign, 'work', seed + 23);
+      const energyText = buildText(sign, 'energy', seed + 37);
+      const adviceText = buildText(sign, 'advice', seed + 51);
+
+      return `
+        <article class="card sign-card">
+          <div class="sign-head">
+            <div>
+              <h2 class="sign-name">${sign.name}</h2>
+              <div class="sign-dates">${sign.dates}</div>
+            </div>
+            <div class="pill">4 блока</div>
+          </div>
+
+          <div class="blocks">
+            ${createBlock('Любовь', loveText)}
+            ${createBlock('Работа', workText)}
+            ${createBlock('Энергия', energyText)}
+            ${createBlock('Совет дня', adviceText)}
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    signsGrid.innerHTML = html;
+    setStatus('прогнозы на сегодня готовы.');
+  }
+
   if (isIOS && !isInStandaloneMode) {
     iosHint.hidden = false;
-    setStatus('iPhone/iPad: установка доступна через Safari → Поделиться → На экран Домой.');
   }
 
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
     installBtn.hidden = false;
-    setStatus('Chrome прислал beforeinstallprompt, установка доступна.');
+    setStatus('можно установить приложение.');
   });
 
   window.addEventListener('appinstalled', () => {
     installBtn.hidden = true;
     deferredPrompt = null;
-    setStatus('Приложение установлено.');
+    setStatus('приложение установлено.');
   });
 
   installBtn.addEventListener('click', async () => {
     if (!deferredPrompt) {
       if (isIOS) {
         iosHint.hidden = false;
-        setStatus('На iPhone установка идет через Safari → Поделиться → На экран Домой.');
+        setStatus('на iPhone установка идет через Safari → Поделиться → На экран Домой.');
       } else {
-        setStatus('Chrome еще не прислал install prompt. Проверь HTTPS/localhost и пункт установки в меню Chrome.');
+        setStatus('установка пока недоступна в этом браузере.');
       }
       return;
     }
 
     deferredPrompt.prompt();
     const choice = await deferredPrompt.userChoice;
-    setStatus('Результат установки: ' + choice.outcome);
+    setStatus('результат установки: ' + choice.outcome);
     deferredPrompt = null;
     installBtn.hidden = true;
-  });
-
-  const horoscopeTargets = {
-    scorpio: {
-      textEl: document.getElementById('text-scorpio'),
-      dateEl: document.getElementById('date-scorpio'),
-      ruName: 'Скорпион'
-    },
-    capricorn: {
-      textEl: document.getElementById('text-capricorn'),
-      dateEl: document.getElementById('date-capricorn'),
-      ruName: 'Козерог'
-    }
-  };
-
-  async function fetchHoroscope(sign) {
-    const urls = [
-      `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign=${sign}`,
-      `https://any.ge/horoscope/api/?sign=${sign}&type=daily&day=today&lang=en`
-    ];
-
-    for (const url of urls) {
-      try {
-        const res = await fetch(url, { method: 'GET' });
-        if (!res.ok) continue;
-
-        const data = await res.json();
-
-        if (data?.data?.horoscope_data) {
-          return {
-            text: data.data.horoscope_data,
-            date: data.data.date || 'Сегодня'
-          };
-        }
-
-        if (data?.description) {
-          return {
-            text: data.description,
-            date: data.date || 'Сегодня'
-          };
-        }
-
-        if (data?.horoscope) {
-          return {
-            text: data.horoscope,
-            date: data.date || 'Сегодня'
-          };
-        }
-      } catch (e) {}
-    }
-
-    throw new Error('Horoscope API unavailable');
-  }
-
-  async function translateToRu(text) {
-    const endpoints = [
-      'https://libretranslate.com/translate',
-      'https://translate.argosopentech.com/translate'
-    ];
-
-    for (const endpoint of endpoints) {
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            q: text,
-            source: 'en',
-            target: 'ru',
-            format: 'text'
-          })
-        });
-
-        if (!res.ok) continue;
-
-        const data = await res.json();
-        if (data?.translatedText) return data.translatedText;
-      } catch (e) {}
-    }
-
-    return text;
-  }
-
-  function cleanupText(text) {
-    return text
-      .replace(/\s+/g, ' ')
-      .replace(/\s([,.!?;:])/g, '$1')
-      .trim();
-  }
-
-  async function loadOneHoroscope(sign) {
-    const target = horoscopeTargets[sign];
-    if (!target) return;
-
-    target.textEl.textContent = `Загружаем гороскоп для знака ${target.ruName}…`;
-    target.dateEl.textContent = 'Получаем данные…';
-
-    try {
-      const result = await fetchHoroscope(sign);
-      target.dateEl.textContent = result.date || 'Сегодня';
-
-      const translated = await translateToRu(result.text);
-      target.textEl.textContent = cleanupText(translated);
-    } catch (e) {
-      target.dateEl.textContent = 'Сегодня';
-      target.textEl.textContent = `Не удалось загрузить гороскоп для знака ${target.ruName}. Попробуй обновить страницу позже.`;
-    }
-  }
-
-  async function loadHoroscopes() {
-    await Promise.all([
-      loadOneHoroscope('scorpio'),
-      loadOneHoroscope('capricorn')
-    ]);
-  }
-
-  refreshBtn.addEventListener('click', async () => {
-    const checks = [];
-
-    checks.push(
-      location.protocol === 'https:' || location.hostname === 'localhost'
-        ? 'origin ok'
-        : 'нужен https/localhost'
-    );
-
-    checks.push('serviceWorker' in navigator ? 'sw api ok' : 'sw api missing');
-
-    if (isIOS) {
-      checks.push('iOS Safari mode');
-      checks.push(isInStandaloneMode ? 'already standalone' : 'use Share → Add to Home Screen');
-    } else {
-      checks.push(
-        'onbeforeinstallprompt' in window
-          ? 'beforeinstallprompt supported'
-          : 'beforeinstallprompt unsupported or hidden'
-      );
-    }
-
-    setStatus(checks.join(' • '));
-    await loadHoroscopes();
   });
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js')
       .then(() => {
         if (!isIOS) {
-          setStatus('Service Worker зарегистрирован, ждём install criteria от Chrome.');
+          setStatus('сайт готов к автономной работе.');
         }
       })
-      .catch(() => setStatus('Не удалось зарегистрировать Service Worker.'));
+      .catch(() => setStatus('не удалось зарегистрировать Service Worker.'));
   } else {
-    setStatus('Браузер не поддерживает Service Worker.');
+    setStatus('браузер не поддерживает Service Worker.');
   }
 
-  loadHoroscopes();
+  renderSigns();
 })();
 </script>
 </body>
