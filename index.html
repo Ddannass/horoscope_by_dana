@@ -126,6 +126,38 @@
     }
 
     p { margin:0 0 12px; }
+
+    .horoscope-card {
+      display:grid;
+      gap:12px;
+    }
+
+    .horoscope-head {
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+    }
+
+    .badge {
+      min-height:32px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:rgba(1, 105, 111, 0.10);
+      color:var(--primary);
+      border:1px solid var(--border);
+      font-size:14px;
+      white-space:nowrap;
+    }
+
+    [data-theme="dark"] .badge {
+      background:rgba(79, 152, 163, 0.14);
+    }
+
+    .horoscope-text {
+      margin-bottom:0;
+      white-space:pre-line;
+    }
   </style>
 </head>
 <body>
@@ -135,7 +167,7 @@
       <img src="./assets/icon-192.png" alt="App icon" width="44" height="44">
       <div>
         <div style="font-size:24px;font-weight:700">Horoscope PWA</div>
-        <div class="muted">Android + iPhone safe install flow</div>
+        <div class="muted">Гороскоп на сегодня для Скорпиона и Козерога</div>
       </div>
     </div>
 
@@ -147,12 +179,41 @@
   </div>
 
   <section class="card">
-    <h1>Установка зависит от платформы.</h1>
+    <h1>Гороскоп на сегодня</h1>
     <p>
       На Android Chrome кнопка появляется после события установки.
       На iPhone установка идет через Safari → Поделиться → На экран Домой.
     </p>
     <div class="status" id="status">Статус: ожидание проверки.</div>
+  </section>
+
+  <section class="card">
+    <h2 class="hint-title">Ежедневный прогноз</h2>
+    <p class="muted">
+      Прогнозы загружаются автоматически. Если перевод временно недоступен, может показаться исходный текст.
+    </p>
+  </section>
+
+  <section class="card horoscope-card">
+    <div class="horoscope-head">
+      <div>
+        <h2 class="hint-title">Скорпион</h2>
+        <div class="status" id="date-scorpio">Загрузка даты…</div>
+      </div>
+      <div class="badge">Сегодня</div>
+    </div>
+    <p class="horoscope-text" id="text-scorpio">Загружаем гороскоп для Скорпиона…</p>
+  </section>
+
+  <section class="card horoscope-card">
+    <div class="horoscope-head">
+      <div>
+        <h2 class="hint-title">Козерог</h2>
+        <div class="status" id="date-capricorn">Загрузка даты…</div>
+      </div>
+      <div class="badge">Сегодня</div>
+    </div>
+    <p class="horoscope-text" id="text-capricorn">Загружаем гороскоп для Козерога…</p>
   </section>
 
   <section class="card" id="iosHint" hidden>
@@ -229,7 +290,121 @@
     installBtn.hidden = true;
   });
 
-  refreshBtn.addEventListener('click', () => {
+  const horoscopeTargets = {
+    scorpio: {
+      textEl: document.getElementById('text-scorpio'),
+      dateEl: document.getElementById('date-scorpio'),
+      ruName: 'Скорпион'
+    },
+    capricorn: {
+      textEl: document.getElementById('text-capricorn'),
+      dateEl: document.getElementById('date-capricorn'),
+      ruName: 'Козерог'
+    }
+  };
+
+  async function fetchHoroscope(sign) {
+    const urls = [
+      `https://freehoroscopeapi.com/api/v1/get-horoscope/daily?sign=${sign}`,
+      `https://any.ge/horoscope/api/?sign=${sign}&type=daily&day=today&lang=en`
+    ];
+
+    for (const url of urls) {
+      try {
+        const res = await fetch(url, { method: 'GET' });
+        if (!res.ok) continue;
+
+        const data = await res.json();
+
+        if (data?.data?.horoscope_data) {
+          return {
+            text: data.data.horoscope_data,
+            date: data.data.date || 'Сегодня'
+          };
+        }
+
+        if (data?.description) {
+          return {
+            text: data.description,
+            date: data.date || 'Сегодня'
+          };
+        }
+
+        if (data?.horoscope) {
+          return {
+            text: data.horoscope,
+            date: data.date || 'Сегодня'
+          };
+        }
+      } catch (e) {}
+    }
+
+    throw new Error('Horoscope API unavailable');
+  }
+
+  async function translateToRu(text) {
+    const endpoints = [
+      'https://libretranslate.com/translate',
+      'https://translate.argosopentech.com/translate'
+    ];
+
+    for (const endpoint of endpoints) {
+      try {
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            q: text,
+            source: 'en',
+            target: 'ru',
+            format: 'text'
+          })
+        });
+
+        if (!res.ok) continue;
+
+        const data = await res.json();
+        if (data?.translatedText) return data.translatedText;
+      } catch (e) {}
+    }
+
+    return text;
+  }
+
+  function cleanupText(text) {
+    return text
+      .replace(/\s+/g, ' ')
+      .replace(/\s([,.!?;:])/g, '$1')
+      .trim();
+  }
+
+  async function loadOneHoroscope(sign) {
+    const target = horoscopeTargets[sign];
+    if (!target) return;
+
+    target.textEl.textContent = `Загружаем гороскоп для знака ${target.ruName}…`;
+    target.dateEl.textContent = 'Получаем данные…';
+
+    try {
+      const result = await fetchHoroscope(sign);
+      target.dateEl.textContent = result.date || 'Сегодня';
+
+      const translated = await translateToRu(result.text);
+      target.textEl.textContent = cleanupText(translated);
+    } catch (e) {
+      target.dateEl.textContent = 'Сегодня';
+      target.textEl.textContent = `Не удалось загрузить гороскоп для знака ${target.ruName}. Попробуй обновить страницу позже.`;
+    }
+  }
+
+  async function loadHoroscopes() {
+    await Promise.all([
+      loadOneHoroscope('scorpio'),
+      loadOneHoroscope('capricorn')
+    ]);
+  }
+
+  refreshBtn.addEventListener('click', async () => {
     const checks = [];
 
     checks.push(
@@ -252,6 +427,7 @@
     }
 
     setStatus(checks.join(' • '));
+    await loadHoroscopes();
   });
 
   if ('serviceWorker' in navigator) {
@@ -265,6 +441,8 @@
   } else {
     setStatus('Браузер не поддерживает Service Worker.');
   }
+
+  loadHoroscopes();
 })();
 </script>
 </body>
