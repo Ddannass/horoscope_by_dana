@@ -12,13 +12,14 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
 
-  <title>Horoscope PWA</title>
+  <title>Гороскопы на каждый день</title>
 
   <style>
     :root, [data-theme="light"] {
       --bg:#f7f6f2;
       --surface:#f9f8f5;
       --surface2:#fbfbf9;
+      --surface3:#f2efe9;
       --text:#28251d;
       --muted:#67655f;
       --primary:#01696f;
@@ -27,12 +28,14 @@
       --inv:#f9f8f4;
       --r:18px;
       --shadow:0 10px 28px rgba(0,0,0,.08);
+      --sticky-top:78px;
     }
 
     [data-theme="dark"] {
       --bg:#171614;
       --surface:#1c1b19;
       --surface2:#201f1d;
+      --surface3:#242320;
       --text:#cdccca;
       --muted:#a5a39f;
       --primary:#4f98a3;
@@ -43,7 +46,12 @@
     }
 
     * { box-sizing:border-box; }
-    html { -webkit-text-size-adjust:none; text-size-adjust:none; scroll-behavior:smooth; }
+    html {
+      -webkit-text-size-adjust:none;
+      text-size-adjust:none;
+      scroll-behavior:smooth;
+      scroll-padding-top:132px;
+    }
 
     body {
       margin:0;
@@ -54,7 +62,7 @@
     }
 
     img { display:block; max-width:100%; height:auto; }
-    button { font:inherit; }
+    button, a { font:inherit; }
 
     .app {
       max-width:1100px;
@@ -147,7 +155,6 @@
     }
 
     p { margin:0; }
-
     .muted { color:var(--muted); }
     .status { font-size:14px; color:var(--muted); }
 
@@ -193,6 +200,66 @@
       background:rgba(255,255,255,.03);
     }
 
+    .sticky-nav-wrap {
+      position:sticky;
+      position:-webkit-sticky;
+      top:0;
+      z-index:20;
+      padding-top:4px;
+    }
+
+    .sticky-nav {
+      border:1px solid var(--border);
+      background:color-mix(in srgb, var(--surface) 88%, transparent);
+      backdrop-filter:blur(12px);
+      -webkit-backdrop-filter:blur(12px);
+      border-radius:18px;
+      box-shadow:var(--shadow);
+      padding:10px;
+    }
+
+    .sticky-nav-title {
+      font-size:13px;
+      color:var(--muted);
+      margin:0 0 8px;
+    }
+
+    .chips {
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      white-space:nowrap;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      scroll-snap-type:x proximity;
+      padding-bottom:2px;
+    }
+
+    .chips::-webkit-scrollbar { display:none; }
+
+    .chip {
+      scroll-snap-align:start;
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      min-height:38px;
+      padding:8px 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--surface3);
+      color:var(--text);
+      text-decoration:none;
+      transition:background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+
+    .chip:hover,
+    .chip.active {
+      background:var(--primary);
+      border-color:var(--primary);
+      color:var(--inv);
+      transform:translateY(-1px);
+    }
+
     .signs-grid {
       display:grid;
       gap:16px;
@@ -202,6 +269,7 @@
     .sign-card {
       display:grid;
       gap:16px;
+      scroll-margin-top:150px;
     }
 
     .sign-head {
@@ -237,7 +305,7 @@
       background:rgba(255,255,255,.20);
       display:grid;
       gap:8px;
-      min-height:150px;
+      min-height:156px;
     }
 
     [data-theme="dark"] .block {
@@ -285,6 +353,10 @@
       .sign-name {
         font-size:24px;
       }
+
+      .block {
+        min-height:auto;
+      }
     }
   </style>
 </head>
@@ -320,12 +392,19 @@
   <section class="card legend">
     <h2>Что внутри каждого знака</h2>
     <div class="legend-grid">
-      <div class="legend-item"><strong>Любовь</strong><br><span class="muted">Эмоции, отношения, внимание, разговоры и близость.</span></div>
-      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Дела, решения, деньги, задачи, переговоры и темп.</span></div>
-      <div class="legend-item"><strong>Энергия</strong><br><span class="muted">Состояние, фокус, ресурс, баланс и внутренний ритм.</span></div>
-      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Один короткий ориентир, на что опереться сегодня.</span></div>
+      <div class="legend-item"><strong>Любовь</strong><br><span class="muted">Эмоции, отношения, симпатия, близость и честность.</span></div>
+      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Задачи, темп, деньги, решения, карьера и деловые контакты.</span></div>
+      <div class="legend-item"><strong>Энергия</strong><br><span class="muted">Состояние, ресурс, баланс, внутренний ритм и внимание к себе.</span></div>
+      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Один короткий ориентир, на что стоит опереться сегодня.</span></div>
     </div>
   </section>
+
+  <div class="sticky-nav-wrap">
+    <nav class="sticky-nav" aria-label="Быстрая навигация по знакам">
+      <div class="sticky-nav-title">Быстрая навигация</div>
+      <div class="chips" id="chipsNav"></div>
+    </nav>
+  </div>
 
   <section class="signs-grid" id="signsGrid"></section>
 
@@ -345,6 +424,7 @@
   const iosHint = document.getElementById('iosHint');
   const signsGrid = document.getElementById('signsGrid');
   const todayLabel = document.getElementById('todayLabel');
+  const chipsNav = document.getElementById('chipsNav');
 
   let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -371,196 +451,204 @@
       name:'Овен',
       dates:'21 марта — 19 апреля',
       traits:['смелый','прямой','быстрый','инициативный'],
-      loveTone:['искренность','импульс','притяжение'],
-      workTone:['рывок','лидерство','действие'],
-      energyTone:['огонь','драйв','скорость']
+      vibe:'огненный напор',
+      loveStyle:['искренность','смелый шаг','открытый интерес'],
+      workStyle:['лидерство','быстрый старт','решительность'],
+      energyStyle:['высокий темп','драйв','мощный импульс']
     },
     {
       key:'taurus',
       name:'Телец',
       dates:'20 апреля — 20 мая',
       traits:['спокойный','надёжный','чувственный','практичный'],
-      loveTone:['нежность','верность','тактильность'],
-      workTone:['стабильность','план','результат'],
-      energyTone:['ровность','земная сила','ритм']
+      vibe:'земная устойчивость',
+      loveStyle:['нежность','верность','ощущение опоры'],
+      workStyle:['стабильность','практический результат','постепенный рост'],
+      energyStyle:['ровный ритм','спокойная сила','комфортный темп']
     },
     {
       key:'gemini',
       name:'Близнецы',
       dates:'21 мая — 20 июня',
       traits:['любопытный','общительный','лёгкий','гибкий'],
-      loveTone:['флирт','разговор','интерес'],
-      workTone:['идеи','связи','скорость мысли'],
-      energyTone:['подвижность','смена фокуса','живость']
+      vibe:'воздушная подвижность',
+      loveStyle:['флирт','разговор','интеллектуальный контакт'],
+      workStyle:['идеи','контакты','быстрая адаптация'],
+      energyStyle:['живость','смена фокуса','умственная гибкость']
     },
     {
       key:'cancer',
       name:'Рак',
       dates:'21 июня — 22 июля',
       traits:['чуткий','бережный','глубокий','интуитивный'],
-      loveTone:['забота','доверие','мягкость'],
-      workTone:['осторожность','чувство момента','внимание'],
-      energyTone:['внутренний ритм','восстановление','чувствительность']
+      vibe:'эмоциональная глубина',
+      loveStyle:['доверие','забота','сердечная близость'],
+      workStyle:['осторожность','интуиция','внимание к атмосфере'],
+      energyStyle:['внутренний ритм','мягкое восстановление','чувствительность']
     },
     {
       key:'leo',
       name:'Лев',
       dates:'23 июля — 22 августа',
       traits:['яркий','щедрый','уверенный','заметный'],
-      loveTone:['романтика','жест','тепло'],
-      workTone:['признание','сцена','лидерская подача'],
-      energyTone:['солнечность','тонус','воля']
+      vibe:'солнечная выразительность',
+      loveStyle:['романтика','тепло','щедрое внимание'],
+      workStyle:['признание','смелая подача','лидерская энергия'],
+      energyStyle:['тонус','воля','яркая подача себя']
     },
     {
       key:'virgo',
       name:'Дева',
       dates:'23 августа — 22 сентября',
       traits:['точный','разумный','собранный','наблюдательный'],
-      loveTone:['внимание к деталям','деликатность','честность'],
-      workTone:['порядок','аналитика','практика'],
-      energyTone:['дисциплина','чистый фокус','собранность']
+      vibe:'ясная собранность',
+      loveStyle:['деликатность','внимание к деталям','тихая верность'],
+      workStyle:['порядок','аналитика','точная настройка'],
+      energyStyle:['дисциплина','чистый фокус','сдержанная сила']
     },
     {
       key:'libra',
       name:'Весы',
       dates:'23 сентября — 22 октября',
       traits:['гармоничный','дипломатичный','тонкий','обаятельный'],
-      loveTone:['баланс','красота','взаимность'],
-      workTone:['переговоры','сотрудничество','репутация'],
-      energyTone:['равновесие','эстетика','мягкая сила']
+      vibe:'тонкий баланс',
+      loveStyle:['взаимность','красивый диалог','эмоциональная симметрия'],
+      workStyle:['переговоры','сотрудничество','репутация'],
+      energyStyle:['равновесие','мягкая сила','эстетичный ритм']
     },
     {
       key:'scorpio',
       name:'Скорпион',
       dates:'23 октября — 21 ноября',
       traits:['сильный','глубокий','магнитичный','проницательный'],
-      loveTone:['страсть','верность','честность без масок'],
-      workTone:['контроль','стратегия','влияние'],
-      energyTone:['концентрация','внутренний напор','выносливость']
+      vibe:'внутренняя интенсивность',
+      loveStyle:['страсть','честность без масок','глубокая связка'],
+      workStyle:['контроль','стратегия','сила влияния'],
+      energyStyle:['концентрация','внутренний напор','эмоциональная выносливость']
     },
     {
       key:'sagittarius',
       name:'Стрелец',
       dates:'22 ноября — 21 декабря',
       traits:['свободный','оптимистичный','живой','прямолинейный'],
-      loveTone:['спонтанность','юмор','пространство'],
-      workTone:['масштаб','перспектива','рост'],
-      energyTone:['движение','вдохновение','лёгкость']
+      vibe:'широкий горизонт',
+      loveStyle:['спонтанность','лёгкость','живой интерес'],
+      workStyle:['масштаб','рост','сильная перспектива'],
+      energyStyle:['движение','вдохновение','свежий воздух']
     },
     {
       key:'capricorn',
       name:'Козерог',
       dates:'22 декабря — 19 января',
       traits:['собранный','амбициозный','стойкий','надёжный'],
-      loveTone:['серьёзность','верность','поступки'],
-      workTone:['структура','цель','авторитет'],
-      energyTone:['выдержка','контроль','поступательный темп']
+      vibe:'спокойная сила',
+      loveStyle:['поступки','серьёзность','надёжное присутствие'],
+      workStyle:['структура','цель','авторитет'],
+      energyStyle:['выдержка','контроль','поступательный ритм']
     },
     {
       key:'aquarius',
       name:'Водолей',
       dates:'20 января — 18 февраля',
       traits:['независимый','оригинальный','умный','нестандартный'],
-      loveTone:['свобода','дружба','искренность'],
-      workTone:['идеи','новаторство','видение'],
-      energyTone:['свежий взгляд','ментальная ясность','обновление']
+      vibe:'свежий взгляд',
+      loveStyle:['свобода','дружба','искренний обмен'],
+      workStyle:['новаторство','идея','видение на шаг вперёд'],
+      energyStyle:['обновление','ментальная ясность','нестандартный ход']
     },
     {
       key:'pisces',
       name:'Рыбы',
       dates:'19 февраля — 20 марта',
       traits:['мечтательный','мягкий','интуитивный','сострадательный'],
-      loveTone:['эмпатия','тонкость','душевная связь'],
-      workTone:['воображение','гибкость','творческий подход'],
-      energyTone:['чувствительность','плавность','внутренний слух']
+      vibe:'тонкая чувствительность',
+      loveStyle:['эмпатия','душевная связь','мягкое притяжение'],
+      workStyle:['воображение','гибкость','творческий подход'],
+      energyStyle:['плавность','внутренний слух','эмоциональная текучесть']
     }
   ];
 
-  const loveOpeners = [
-    'В любви сегодня важна',
-    'Личная сфера просит',
-    'В отношениях на первый план выходит',
-    'Сегодня сердце лучше всего откликается на',
-    'Романтический фон дня усиливает'
+  const dayModes = [
+    {
+      key:'clarity',
+      title:'день ясности',
+      mood:'сегодня многое становится понятнее, если не торопить выводы',
+      love:['прояснить ожидания','называть вещи своими именами','не играть в угадайку'],
+      work:['расставить приоритеты','убрать лишнее','держаться чёткой линии'],
+      energy:['не распыляться','снизить шум вокруг себя','беречь внимание'],
+      advice:['говорить проще','выбирать главное','не усложнять очевидное']
+    },
+    {
+      key:'momentum',
+      title:'день движения',
+      mood:'день хорошо откликается на инициативу и небольшой смелый шаг',
+      love:['сделать первый шаг','не прятать симпатию','доверять живому импульсу'],
+      work:['не тянуть со стартом','брать темп в свои руки','решать по ходу'],
+      energy:['давать телу движение','не застаиваться','включаться постепенно, но уверенно'],
+      advice:['действовать, а не откладывать','не ждать идеального момента','проверять идеи практикой']
+    },
+    {
+      key:'balance',
+      title:'день баланса',
+      mood:'лучшие результаты приходят там, где есть мера, ритм и спокойствие',
+      love:['держать баланс между близостью и личным пространством','не давить','слышать реакцию другого'],
+      work:['не перегружать график','делать поэтапно','сохранять ровный темп'],
+      energy:['чередовать активность и отдых','не идти в крайности','держать комфортный ритм'],
+      advice:['выбирать устойчивость','не спешить с выводами','давать событиям дозреть']
+    },
+    {
+      key:'connection',
+      title:'день контакта',
+      mood:'сегодня многое решается через разговор, интонацию и правильный момент',
+      love:['идти в диалог','быть внимательнее к словам','откликаться теплее'],
+      work:['прояснять договорённости','не молчать о важном','делать ставку на коммуникацию'],
+      energy:['снижать напряжение через общение','не оставаться в себе слишком долго','делиться ощущениями'],
+      advice:['задавать вопросы','не додумывать за других','искать живую обратную связь']
+    },
+    {
+      key:'reset',
+      title:'день перезагрузки',
+      mood:'это хороший момент, чтобы отпустить лишнее и собрать себя заново',
+      love:['не тянуть прошлое в сегодняшний разговор','обновить тон общения','начать мягче'],
+      work:['пересобрать подход','переделать неудобное','почистить процессы'],
+      energy:['делать паузы','сбрасывать перегруз','возвращаться к простым опорам'],
+      advice:['облегчать, а не нагромождать','не держаться за усталое','освобождать место для нового']
+    }
   ];
 
-  const loveActions = [
-    'спокойная честность и ясный разговор.',
-    'маленький, но искренний жест.',
-    'внимание к нюансам настроения партнёра.',
-    'умение не торопить чувства.',
-    'готовность говорить прямо, но мягко.',
-    'живой интерес вместо догадок.',
-    'тепло, которое проявляется не словами, а поступками.',
-    'возможность сделать шаг навстречу без давления.'
+  const endings = [
+    'Это даст ощущение внутренней опоры.',
+    'Так день сложится заметно ровнее.',
+    'Именно там сегодня скрыт лучший результат.',
+    'Так будет проще удержать нужный настрой.',
+    'Это снизит внутренний шум и суету.',
+    'На такой почве легче увидеть верное решение.',
+    'Так появится чувство, что день идёт в твою сторону.',
+    'Именно этот подход сегодня окажется самым выигрышным.'
   ];
 
-  const workOpeners = [
-    'В работе день складывается вокруг',
-    'Деловая часть дня требует',
-    'Сегодня в задачах особенно поможет',
-    'Профессиональная сфера усиливает тему',
-    'Рабочий ритм строится через'
+  const loveFrames = [
+    (sign, mode, trait, style, end) => `Для ${sign.name.toLowerCase()} в любви включается ${style}. ${mode.mood}, а значит особенно полезно ${pick(mode.love, hashString(sign.key + mode.key), 1)}. Твоя черта «${trait}» сейчас работает в плюс, если не пытаться контролировать всё заранее. ${end}`,
+    (sign, mode, trait, style, end) => `Личная сфера у ${sign.name.toLowerCase()} сегодня держится на энергии «${style}». Вместо догадок лучше ${pick(mode.love, hashString(mode.key + sign.key), 2)}. Когда проявляется твоя ${trait} сторона, отношения становятся теплее и честнее. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня в чувствах для ${sign.name.toLowerCase()} важны ${style} и эмоциональная аккуратность. День несёт настрой на ${mode.title}, поэтому стоит ${pick(mode.love, hashString('love' + sign.key), 3)}. Чем спокойнее ты в выражении чувств, тем сильнее отдача. ${end}`
   ];
 
-  const workActions = [
-    'приоритета и чёткой последовательности.',
-    'спокойного контроля над деталями.',
-    'быстрого ответа на меняющиеся условия.',
-    'уверенности в своей позиции.',
-    'разумной экономии сил и времени.',
-    'переговоров без лишней резкости.',
-    'точного решения, а не суеты.',
-    'одного главного шага вместо десяти мелких.'
+  const workFrames = [
+    (sign, mode, trait, style, end) => `В работе ${sign.name.toLowerCase()} сильнее всего проявляет ${style}. День подталкивает ${pick(mode.work, hashString('work' + sign.key), 1)}, а не распыляться на всё сразу. Твоя черта «${trait}» сегодня помогает закрепить результат, а не просто быстро отреагировать. ${end}`,
+    (sign, mode, trait, style, end) => `Деловой фон дня для ${sign.name.toLowerCase()} связан с темой «${style}». Сейчас важнее ${pick(mode.work, hashString(sign.key + 'job'), 2)}, чем пытаться угодить всем задачам одновременно. Сильнее всего сыграет твоя способность быть ${trait}. ${end}`,
+    (sign, mode, trait, style, end) => `Профессиональная часть дня у ${sign.name.toLowerCase()} идёт через ${style}. На фоне ${mode.title} особенно полезно ${pick(mode.work, hashString(mode.key + 'career'), 3)}. Если держаться ясного плана, усилия дадут более заметный эффект. ${end}`
   ];
 
-  const energyOpeners = [
-    'По энергии день показывает',
-    'Внутренний ресурс сегодня держится на',
-    'Тело и настроение лучше всего отзываются на',
-    'Энергетика дня подсказывает',
-    'Твой ритм сегодня выигрывает от'
+  const energyFrames = [
+    (sign, mode, trait, style, end) => `По энергии ${sign.name.toLowerCase()} сегодня важны ${style} и уважение к собственному ритму. День раскрывается лучше, если ${pick(mode.energy, hashString(sign.key + 'energy'), 1)}. Твоя ${trait} природа особенно хорошо чувствует, где стоит ускориться, а где — отпустить. ${end}`,
+    (sign, mode, trait, style, end) => `Внутренний ресурс ${sign.name.toLowerCase()} держится на теме «${style}». На фоне ${mode.title} лучше ${pick(mode.energy, hashString(mode.key + sign.key + 'e'), 2)}. Чем меньше перегруза, тем больше собранности и спокойной силы к вечеру. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня телу и настроению у ${sign.name.toLowerCase()} подойдут ${style}. Это не день для резких скачков, зато удачный момент, чтобы ${pick(mode.energy, hashString('body' + sign.key), 3)}. Тогда твоя ${trait} сторона сработает мягко и точно. ${end}`
   ];
 
-  const energyActions = [
-    'бережного темпа и коротких пауз.',
-    'движения без перегрузки.',
-    'сниженной спешки и чистого фокуса.',
-    'контакта с телом, а не только с мыслями.',
-    'ритма, в котором есть воздух.',
-    'смены активности и восстановления.',
-    'спокойного старта без резких рывков.',
-    'отказа от всего, что крадёт внимание.'
-  ];
-
-  const adviceOpeners = [
-    'Совет дня:',
-    'Сегодня полезно:',
-    'Главный ориентир:',
-    'Лучшее решение дня:',
-    'Небольшая подсказка:'
-  ];
-
-  const adviceActions = [
-    'не распыляться и держаться одной линии.',
-    'сначала прояснить, потом действовать.',
-    'не принимать близко всё, что сказано на эмоциях.',
-    'выбрать качество, а не скорость.',
-    'оставить пространство для импровизации.',
-    'вернуться к тому, что уже работает.',
-    'не недооценивать силу короткого разговора.',
-    'проверять интуицию фактами и наоборот.'
-  ];
-
-  const flavorPhrases = [
-    'Это даст ощущение собранности и внутренней опоры.',
-    'Так день пойдёт ровнее и спокойнее.',
-    'Именно в этом сегодня скрыт лучший результат.',
-    'Так будет проще почувствовать верный момент.',
-    'Это заметно снизит внутренний шум.',
-    'На такой почве легче удержать баланс.',
-    'Из этого может вырасти удачный поворот.',
-    'Так ты быстрее поймёшь, куда двигаться дальше.'
+  const adviceFrames = [
+    (sign, mode, trait, style, end) => `Совет дня для ${sign.name.toLowerCase()}: ${pick(mode.advice, hashString('advice' + sign.key), 1)}. Тема дня — ${mode.title}, а значит не нужно спорить с естественным темпом событий. Оставайся ${trait} в главном и свободнее в мелочах. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня ${sign.name.toLowerCase()} лучше всего опираться на ${mode.title}. Практичная подсказка — ${pick(mode.advice, hashString(sign.key + 'tip'), 2)}. Когда ты включаешь своё качество «${trait}», даже простые шаги становятся очень точными. ${end}`,
+    (sign, mode, trait, style, end) => `Небольшой ориентир для ${sign.name.toLowerCase()}: ${pick(mode.advice, hashString(mode.key + sign.key + 'guide'), 3)}. День не требует идеальности, но хорошо откликается на ${style}. Главное — не терять связь с тем, что для тебя по-настоящему важно. ${end}`
   ];
 
   function hashString(str) {
@@ -596,45 +684,59 @@
     `;
   }
 
-  function buildText(sign, type, seedBase) {
-    const trait = pick(sign.traits, seedBase, 1);
-    const flavor = pick(flavorPhrases, seedBase, 2);
+  function buildSection(sign, mode, sectionType, seed) {
+    const trait = pick(sign.traits, seed, 1);
+    const end = pick(endings, seed, 2);
 
-    if (type === 'love') {
-      return `${pick(loveOpeners, seedBase)} ${pick(sign.loveTone, seedBase, 3)}. ${pick(loveActions, seedBase, 4)} Для знака ${sign.name.toLowerCase()} сегодня особенно сильна черта «${trait}». ${flavor}`;
+    if (sectionType === 'love') {
+      const style = pick(sign.loveStyle, seed, 3);
+      return pick(loveFrames, seed, 4)(sign, mode, trait, style, end);
     }
 
-    if (type === 'work') {
-      return `${pick(workOpeners, seedBase)} ${pick(sign.workTone, seedBase, 5)}. ${pick(workActions, seedBase, 6)} Ставка на качество и выдержку принесёт больше, чем лишняя спешка. ${flavor}`;
+    if (sectionType === 'work') {
+      const style = pick(sign.workStyle, seed, 5);
+      return pick(workFrames, seed, 6)(sign, mode, trait, style, end);
     }
 
-    if (type === 'energy') {
-      return `${pick(energyOpeners, seedBase)} ${pick(sign.energyTone, seedBase, 7)}. ${pick(energyActions, seedBase, 8)} Чем мягче ты распределишь силы, тем стабильнее будет весь день. ${flavor}`;
+    if (sectionType === 'energy') {
+      const style = pick(sign.energyStyle, seed, 7);
+      return pick(energyFrames, seed, 8)(sign, mode, trait, style, end);
     }
 
-    return `${pick(adviceOpeners, seedBase)} ${pick(adviceActions, seedBase, 9)} Для ${sign.name.toLowerCase()} это тот день, когда простое решение часто оказывается самым верным. ${flavor}`;
+    const style = sign.vibe;
+    return pick(adviceFrames, seed, 9)(sign, mode, trait, style, end);
+  }
+
+  function renderChips() {
+    chipsNav.innerHTML = signs.map(sign => `
+      <a class="chip" href="#sign-${sign.key}" data-chip="${sign.key}">${sign.name}</a>
+    `).join('');
   }
 
   function renderSigns() {
     const now = new Date();
     const dateKey = now.toISOString().slice(0, 10);
-    todayLabel.textContent = `Сегодня • ${formatDateRu(now)}`;
+    const globalSeed = hashString(dateKey);
+    const mode = pick(dayModes, globalSeed, 0);
+
+    todayLabel.textContent = `Сегодня • ${formatDateRu(now)} • ${mode.title}`;
 
     const html = signs.map((sign, index) => {
-      const seed = hashString(`${dateKey}-${sign.key}-${index}`);
-      const loveText = buildText(sign, 'love', seed + 11);
-      const workText = buildText(sign, 'work', seed + 23);
-      const energyText = buildText(sign, 'energy', seed + 37);
-      const adviceText = buildText(sign, 'advice', seed + 51);
+      const baseSeed = hashString(`${dateKey}-${sign.key}-${index}-${mode.key}`);
+
+      const loveText = buildSection(sign, mode, 'love', baseSeed + 11);
+      const workText = buildSection(sign, mode, 'work', baseSeed + 29);
+      const energyText = buildSection(sign, mode, 'energy', baseSeed + 47);
+      const adviceText = buildSection(sign, mode, 'advice', baseSeed + 71);
 
       return `
-        <article class="card sign-card">
+        <article class="card sign-card" id="sign-${sign.key}" data-sign="${sign.key}">
           <div class="sign-head">
             <div>
               <h2 class="sign-name">${sign.name}</h2>
               <div class="sign-dates">${sign.dates}</div>
             </div>
-            <div class="pill">4 блока</div>
+            <div class="pill">${mode.title}</div>
           </div>
 
           <div class="blocks">
@@ -649,6 +751,36 @@
 
     signsGrid.innerHTML = html;
     setStatus('прогнозы на сегодня готовы.');
+  }
+
+  function setupActiveChips() {
+    const chips = [...document.querySelectorAll('.chip')];
+    const sections = [...document.querySelectorAll('.sign-card')];
+
+    if (!chips.length || !sections.length) return;
+
+    const activateChip = (key) => {
+      chips.forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.chip === key);
+      });
+    };
+
+    activateChip(signs[0].key);
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+      if (visible[0]) {
+        activateChip(visible[0].target.dataset.sign);
+      }
+    }, {
+      rootMargin: '-20% 0px -55% 0px',
+      threshold: [0.2, 0.35, 0.5, 0.7]
+    });
+
+    sections.forEach(section => observer.observe(section));
   }
 
   if (isIOS && !isInStandaloneMode) {
@@ -698,7 +830,9 @@
     setStatus('браузер не поддерживает Service Worker.');
   }
 
+  renderChips();
   renderSigns();
+  setupActiveChips();
 })();
 </script>
 </body>
