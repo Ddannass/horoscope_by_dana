@@ -265,6 +265,64 @@
       gap:10px;
     }
 
+    .natal-card {
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .natal-title {
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .birth-row {
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .birth-row.cols3 {
+      grid-template-columns:1fr 1fr 1fr;
+    }
+
+    .birth-label {
+      display:grid;
+      gap:4px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .birth-details {
+      border:1px solid var(--border);
+      border-radius:12px;
+      padding:10px;
+      background:var(--surface3);
+    }
+
+    .birth-details summary {
+      cursor:pointer;
+      font-size:13px;
+      color:var(--primary);
+      font-weight:600;
+      user-select:none;
+    }
+
+    .birth-details[open] summary {
+      margin-bottom:10px;
+    }
+
+    .birth-details .birth-fields {
+      display:grid;
+      gap:8px;
+    }
+
+    select.birth-input {
+      cursor:pointer;
+    }
+
     .birth-title {
       margin:0;
       font-size:14px;
@@ -578,6 +636,12 @@
     <div id="birthWrapper"></div>
   </section>
 
+  <section class="card natal-card" id="natalCard" aria-label="Твоя натальная карта" hidden>
+    <p class="natal-title">Твоя натальная карта</p>
+    <div class="sky-pills" id="natalPills"></div>
+    <p class="sky-hint" id="natalHint"></p>
+  </section>
+
   <section class="card sky-card" aria-label="Небо сегодня">
     <p class="sky-title">Небо сегодня</p>
     <div class="sky-pills" id="skyPills"></div>
@@ -612,6 +676,9 @@
   const skyPills = document.getElementById('skyPills');
   const skyHint = document.getElementById('skyHint');
   const birthWrapper = document.getElementById('birthWrapper');
+  const natalCard = document.getElementById('natalCard');
+  const natalPills = document.getElementById('natalPills');
+  const natalHint = document.getElementById('natalHint');
 
   let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -1055,6 +1122,7 @@
 
   const ZODIAC_RU = ['Овне','Тельце','Близнецах','Раке','Льве','Деве','Весах','Скорпионе','Стрельце','Козероге','Водолее','Рыбах'];
   const ZODIAC_NOM_RU = ['Овен','Телец','Близнецы','Рак','Лев','Дева','Весы','Скорпион','Стрелец','Козерог','Водолей','Рыбы'];
+  const ZODIAC_GEN_RU = ['Овна','Тельца','Близнецов','Рака','Льва','Девы','Весов','Скорпиона','Стрельца','Козерога','Водолея','Рыб'];
   const ELEMENT_BY_SIGN = ['fire','earth','air','water','fire','earth','air','water','fire','earth','air','water'];
   const COMPATIBLE_ELEMENTS = {
     fire:  ['fire','air'],
@@ -1062,8 +1130,10 @@
     air:   ['air','fire'],
     water: ['water','earth']
   };
-  const PLANET_GLYPH = { Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂' };
-  const PLANET_RU = { Sun:'Солнце', Moon:'Луна', Mercury:'Меркурий', Venus:'Венера', Mars:'Марс' };
+  const PLANET_GLYPH = { Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂', Jupiter:'♃', Saturn:'♄', Uranus:'♅', Neptune:'♆', Pluto:'♇', ASC:'Asc', MC:'MC' };
+  const PLANET_RU   = { Sun:'Солнце', Moon:'Луна', Mercury:'Меркурий', Venus:'Венера', Mars:'Марс', Jupiter:'Юпитер', Saturn:'Сатурн', Uranus:'Уран', Neptune:'Нептун', Pluto:'Плутон', ASC:'Восх.', MC:'MC' };
+  const ALL_PLANETS = ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+  const TRANSIT_PLANETS = ['Sun','Moon','Mercury','Venus','Mars'];
 
   function geoEclLon(body, date) {
     if (body === 'Moon') {
@@ -1131,44 +1201,131 @@
     return signIndex * 30 + 15;
   }
 
-  // ===== Дата рождения =====
+  // ===== Дата рождения и натальная карта =====
   const BIRTH_KEY = 'horoscope_birth_date';
 
-  function loadBirthDate() {
+  // Загружает birth data. Поддерживает миграцию:
+  //  - старый формат: строка "YYYY-MM-DD"
+  //  - новый формат: JSON { date, time?, tzOffsetMin?, lat?, lon?, place? }
+  function loadBirth() {
     try {
-      const v = localStorage.getItem(BIRTH_KEY);
-      if (!v) return null;
-      // Парсим YYYY-MM-DD как локальную дату в полдень
-      const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (!m) return null;
-      const d = new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
-      if (isNaN(d.getTime())) return null;
-      return d;
+      const raw = localStorage.getItem(BIRTH_KEY);
+      if (!raw) return null;
+      if (/^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+        return { date: raw };
+      }
+      const obj = JSON.parse(raw);
+      if (obj && obj.date && /^\d{4}-\d{2}-\d{2}$/.test(obj.date)) return obj;
+      return null;
     } catch (e) {
       return null;
     }
   }
-
-  function saveBirthDate(dateStr) {
-    try { localStorage.setItem(BIRTH_KEY, dateStr); } catch (e) {}
+  function saveBirth(obj) {
+    try { localStorage.setItem(BIRTH_KEY, JSON.stringify(obj)); } catch (e) {}
   }
-
-  function clearBirthDate() {
+  function clearBirth() {
     try { localStorage.removeItem(BIRTH_KEY); } catch (e) {}
   }
 
+  function rad(d) { return d * Math.PI / 180; }
+  function deg(r) { return r * 180 / Math.PI; }
+
+  // Преобразует объект birth (с локальным временем и UTC offset) в Date UTC
+  function birthToUTC(birth) {
+    if (!birth || !birth.date) return null;
+    const m = birth.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return null;
+    let h = 12, mi = 0;
+    if (birth.time) {
+      const t = birth.time.match(/^(\d{2}):(\d{2})$/);
+      if (t) { h = +t[1]; mi = +t[2]; }
+    }
+    const tz = (birth.tzOffsetMin != null) ? +birth.tzOffsetMin : 0;
+    const utc = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3], h, mi, 0));
+    utc.setUTCMinutes(utc.getUTCMinutes() - tz);
+    return utc;
+  }
+
+  function localSiderealTimeDeg(date, lonDeg) {
+    const gmstHours = Astronomy.SiderealTime(date);
+    return normalizeLon((gmstHours + lonDeg / 15) * 15);
+  }
+  function obliquityDeg(date) {
+    return Astronomy.e_tilt(Astronomy.MakeTime(date)).tobl;
+  }
+  function calcMC(armcDeg, epsDeg) {
+    const a = rad(armcDeg), e = rad(epsDeg);
+    return normalizeLon(deg(Math.atan2(Math.sin(a), Math.cos(a) * Math.cos(e))));
+  }
+  function calcASC(armcDeg, latDeg, epsDeg) {
+    const a = rad(armcDeg), e = rad(epsDeg), phi = rad(latDeg);
+    return normalizeLon(deg(Math.atan2(
+      Math.cos(a),
+      -(Math.sin(a) * Math.cos(e) + Math.tan(phi) * Math.sin(e))
+    )));
+  }
+
+  // Возвращает полную натальную карту (то, что можем посчитать по введённым данным)
+  function computeNatal(birth) {
+    if (!birth) return null;
+    const utc = birthToUTC(birth);
+    if (!utc || isNaN(utc.getTime())) return null;
+
+    const hasTime  = !!birth.time && birth.tzOffsetMin != null;
+    const hasPlace = (typeof birth.lat === 'number') && (typeof birth.lon === 'number');
+
+    const planets = {};
+    ALL_PLANETS.forEach(p => {
+      const lon = normalizeLon(geoEclLon(p, utc));
+      planets[p] = { lon, sign: Math.floor(lon / 30) };
+    });
+
+    // Без точного времени Луна может ошибиться до ~7° (за сутки). Помечаем.
+    // Если время не задано, считаем по полудню.
+
+    let asc = null, mc = null, houses = null;
+    if (hasTime && hasPlace) {
+      const armc = localSiderealTimeDeg(utc, birth.lon);
+      const eps  = obliquityDeg(utc);
+      const mcLon  = calcMC(armc, eps);
+      const ascLon = calcASC(armc, birth.lat, eps);
+      asc = { lon: ascLon, sign: Math.floor(ascLon / 30) };
+      mc  = { lon: mcLon,  sign: Math.floor(mcLon  / 30) };
+      // Дома по Whole Sign: дом N начинается со знака (ascSign + N - 1) % 12
+      houses = [];
+      for (let i = 0; i < 12; i++) houses.push((asc.sign + i) % 12);
+    }
+
+    return { birth, utc, hasTime, hasPlace, planets, asc, mc, houses };
+  }
+
+  function natalSunLon(signIndex) {
+    return signIndex * 30 + 15;
+  }
+
+  // Возвращает упрощённый объект натальной точки Солнца для совместимости с прежней логикой
   function getNatalSunData() {
-    const d = loadBirthDate();
-    if (!d) return null;
-    const lon = normalizeLon(geoEclLon('Sun', d));
+    const birth = loadBirth();
+    if (!birth) return null;
+    const utc = birthToUTC(birth);
+    if (!utc) return null;
+    const lon = normalizeLon(geoEclLon('Sun', utc));
     const signIndex = Math.floor(lon / 30);
-    return { date: d, lon, signIndex, signKey: signs[signIndex].key };
+    return { date: utc, lon, signIndex, signKey: signs[signIndex].key };
   }
 
   function formatBirthDate(d) {
     return new Intl.DateTimeFormat('ru-RU', {
       day: 'numeric', month: 'long', year: 'numeric'
     }).format(d);
+  }
+
+  function formatBirthLocalDate(birth) {
+    const m = birth.date.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!m) return birth.date;
+    const d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return formatBirthDate(d);
   }
 
   // Звёздная оценка из аспекта + ретроградности
@@ -1331,6 +1488,159 @@
     return { text, score: ctx.score };
   }
 
+  // ========== Натальная логика ==========
+  // Какие транзитные планеты участвуют в каждом блоке
+  const TRANSIT_SOURCES = {
+    love:   ['Venus','Moon','Mars'],
+    work:   ['Mercury','Sun','Mars'],
+    energy: ['Mars','Sun','Moon'],
+    advice: ['Moon','Sun']
+  };
+  // К каким натальным точкам считаем аспекты для каждого блока
+  const NATAL_TARGETS = {
+    love:   ['Venus','Moon','Sun'],
+    work:   ['Mercury','Sun','Saturn','MC'],
+    energy: ['Mars','Sun','ASC'],
+    advice: ['Sun','Moon','ASC','MC']
+  };
+  const ASPECT_ANGLE = { conjunction:0, sextile:60, square:90, trine:120, opposition:180 };
+  const ASPECT_NAME_RU = {
+    conjunction:'соединении', sextile:'секстиле', square:'квадрате',
+    trine:'тригоне', opposition:'оппозиции'
+  };
+  const PLANET_RU_DAT = {
+    Sun:'твоему натальному Солнцу', Moon:'твоей натальной Луне',
+    Mercury:'твоему натальному Меркурию', Venus:'твоей натальной Венере',
+    Mars:'твоему натальному Марсу', Jupiter:'твоему натальному Юпитеру',
+    Saturn:'твоему натальному Сатурну', Uranus:'твоему натальному Урану',
+    Neptune:'твоему натальному Нептуну', Pluto:'твоему натальному Плутону',
+    ASC:'твоему Восходящему', MC:'твоему MC'
+  };
+  const PLANET_GENDER = {
+    Sun:'m', Moon:'f', Mercury:'m', Venus:'f', Mars:'m',
+    Jupiter:'m', Saturn:'m', Uranus:'m', Neptune:'m', Pluto:'m'
+  };
+  function retroAdj(p) {
+    return PLANET_GENDER[p] === 'f' ? 'ретроградная' : 'ретроградный';
+  }
+
+  function getNatalLon(natal, key) {
+    if (key === 'ASC') return natal.asc ? natal.asc.lon : null;
+    if (key === 'MC')  return natal.mc  ? natal.mc.lon  : null;
+    return natal.planets[key] ? natal.planets[key].lon : null;
+  }
+
+  // Ищем самый точный аспект между транзитом и натальной точкой для блока
+  function findBestAspect(sky, natal, blockType) {
+    if (!natal) return null;
+    let best = null;
+    for (const tName of TRANSIT_SOURCES[blockType]) {
+      const tLon = sky.lon[tName];
+      if (tLon == null) continue;
+      for (const nName of NATAL_TARGETS[blockType]) {
+        const nLon = getNatalLon(natal, nName);
+        if (nLon == null) continue;
+        // Не считаем транзит планеты к самой себе как точку — это редкое «возвращение»
+        // и оно покрывается конъюнкцией. Оставим, пусть появляется.
+        const asp = getAspect(nLon, tLon);
+        if (asp.name === 'none') continue;
+        let d = Math.abs(nLon - tLon) % 360;
+        if (d > 180) d = 360 - d;
+        const precision = Math.abs(d - ASPECT_ANGLE[asp.name]);
+        if (!best || precision < best.precision) {
+          best = { transit: tName, natal: nName, aspect: asp, precision, transitLon: tLon, natalLon: nLon };
+        }
+      }
+    }
+    return best;
+  }
+
+  // Дом, в котором стоит транзитная планета (Whole Sign)
+  function planetHouse(planetLon, natal) {
+    if (!natal || !natal.asc) return null;
+    const planetSign = Math.floor(planetLon / 30);
+    return ((planetSign - natal.asc.sign + 12) % 12) + 1;
+  }
+
+  // Построение секции с учётом полной натальной карты
+  function buildSectionNatal(sign, signIndex, sky, type, natal) {
+    const best = findBestAspect(sky, natal, type);
+    const mode = pickDayMode(sky);
+
+    // Звёздная оценка по найденному аспекту
+    let score = 3;
+    if (best) {
+      if (best.aspect.quality === 'great') score += 2;
+      else if (best.aspect.quality === 'good') score += 1;
+      else if (best.aspect.quality === 'strong') score += 1;
+      else if (best.aspect.quality === 'tense') score -= 1;
+      if (sky.retrograde[best.transit]) score -= 1;
+    }
+    score = Math.max(1, Math.min(5, score));
+
+    const dateKey = getLocalDateKey();
+    const seedKey = best ? `${best.transit}-${best.natal}-${best.aspect.name}` : 'none';
+    const seed = hashString(`${dateKey}-${sign.key}-${type}-${seedKey}`);
+
+    const sElement = elements[sign.element];
+    const modality = modalities[sign.modality];
+    const ctx = {
+      seed,
+      modeMood: mode.mood,
+      modeAdd: pick(mode.add, seed, 10),
+      core: pick(sign.loveCore, seed, 1),
+      workCore: pick(sign.workCore, seed, 2),
+      extraLove: pick(sign.loveCore, seed, 3),
+      extraWork: pick(sign.workCore, seed, 4),
+      extraEnergy: pick(sElement.energy, seed, 5),
+      elementLove: pick(sElement.love, seed, 6),
+      elementWork: pick(sElement.work, seed, 7),
+      elementEnergy: pick(sElement.energy, seed, 8),
+      modalityStyle: pick(modality.style, seed, 9),
+      modalityAdvice: pick(modality.advice, seed, 11),
+      endingA: feminineEnding(sign)
+    };
+
+    const end = pick(endings, seed, 1);
+    const tpl = pick(templates[type], seed, 2);
+    let text = tpl(sign, ctx, end);
+
+    // Подпись с самым точным аспектом
+    if (best) {
+      const tSign = ZODIAC_RU[Math.floor(best.transitLon / 30)];
+      const nSign = ZODIAC_RU[Math.floor(best.natalLon / 30)];
+      const aspRu = ASPECT_NAME_RU[best.aspect.name];
+      const transitRu = PLANET_RU[best.transit];
+      const natalRu = PLANET_RU_DAT[best.natal];
+      const flavorKey = type === 'advice' ? 'love' : type;
+      const flavor = pick(aspectFlavor[best.aspect.name][flavorKey], seed, 13);
+      const retro = sky.retrograde[best.transit] ? ` (${retroAdj(best.transit)})` : '';
+      const house = planetHouse(best.transitLon, natal);
+      const houseStr = house ? ` в твоём ${house}-м доме` : '';
+      const precStr = best.precision < 2
+        ? `, аспект почти точный (${best.precision.toFixed(1)}°)`
+        : '';
+      text += ` ${transitRu} в ${tSign}${retro}${houseStr} в ${aspRu} к ${natalRu} в ${nSign}${precStr} — ${flavor}.`;
+    } else {
+      // Нет аспекта в орбисе — описываем главного транзитного «правителя» блока и его дом
+      const planet = TYPE_RULER[type];
+      const tSign = ZODIAC_RU[sky.sign[planet]];
+      const transitRu = PLANET_RU[planet];
+      const retro = sky.retrograde[planet] ? ` (${retroAdj(planet)})` : '';
+      const house = planetHouse(sky.lon[planet], natal);
+      const houseStr = house ? ` — в твоём ${house}-м доме` : '';
+      text += ` ${transitRu} в ${tSign}${retro}${houseStr}, точных аспектов к твоей карте сегодня нет — день идёт ровно.`;
+    }
+
+    // Для совета добавляем фазу Луны
+    if (type === 'advice') {
+      const moonAdv = moonPhaseAdvice[sky.phaseName] || '';
+      if (moonAdv) text += ` ${ucFirst(moonAdv)}.`;
+    }
+
+    return { text, score };
+  }
+
   function renderChips(list) {
     const arr = list || signs;
     chipsNav.innerHTML = arr.map(sign => `
@@ -1372,41 +1682,183 @@
     sections.forEach(section => signObserver.observe(section));
   }
 
-  function renderBirthCard(natal) {
-    if (natal) {
-      const deg = (natal.lon % 30).toFixed(1);
+  // Часовые пояса для dropdown (наиболее частые)
+  const TZ_OPTIONS = [
+    { v: -720, l: 'UTC−12' }, { v: -660, l: 'UTC−11' }, { v: -600, l: 'UTC−10' },
+    { v: -540, l: 'UTC−9' },  { v: -480, l: 'UTC−8' },  { v: -420, l: 'UTC−7' },
+    { v: -360, l: 'UTC−6' },  { v: -300, l: 'UTC−5' },  { v: -240, l: 'UTC−4' },
+    { v: -180, l: 'UTC−3' },  { v: -120, l: 'UTC−2' },  { v:  -60, l: 'UTC−1' },
+    { v:    0, l: 'UTC±0' },  { v:   60, l: 'UTC+1' },  { v:  120, l: 'UTC+2 (Калининград)' },
+    { v:  180, l: 'UTC+3 (Москва, Минск, Киев)' },      { v:  240, l: 'UTC+4 (Самара, Ижевск)' },
+    { v:  300, l: 'UTC+5 (Екатеринбург, Уфа)' },        { v:  330, l: 'UTC+5:30 (Индия)' },
+    { v:  360, l: 'UTC+6 (Омск)' },                     { v:  420, l: 'UTC+7 (Новосибирск, Красноярск)' },
+    { v:  480, l: 'UTC+8 (Иркутск, Китай)' },           { v:  540, l: 'UTC+9 (Якутск, Япония)' },
+    { v:  600, l: 'UTC+10 (Владивосток)' },             { v:  660, l: 'UTC+11 (Магадан)' },
+    { v:  720, l: 'UTC+12 (Камчатка)' }
+  ];
+
+  function tzOptionsHtml(selectedMin) {
+    return TZ_OPTIONS.map(o =>
+      `<option value="${o.v}"${o.v === selectedMin ? ' selected' : ''}>${o.l}</option>`
+    ).join('');
+  }
+
+  function renderBirthCard(natalSun) {
+    const birth = loadBirth();
+    const today = new Date();
+    const maxAttr = today.toISOString().slice(0, 10);
+
+    // Если данных нет — короткая форма + accordion с полными
+    if (!birth) {
       birthWrapper.innerHTML = `
-        <p class="birth-info">☉ ${signs[natal.signIndex].cases.nom} ${deg}° · ${formatBirthDate(natal.date)}</p>
-        <button id="birthClearBtn" class="birth-btn-link" type="button">Изменить дату</button>
-      `;
-    } else {
-      const today = new Date();
-      const maxAttr = today.toISOString().slice(0, 10);
-      birthWrapper.innerHTML = `
-        <p class="birth-hint">Укажи дату рождения — натальное Солнце посчитается точно (а не как середина знака), и твой знак появится наверху списка. Дата хранится локально в браузере и никуда не отправляется.</p>
-        <div class="birth-controls">
-          <input type="date" id="birthInput" class="birth-input" max="${maxAttr}" />
-          <button id="birthSaveBtn" class="birth-btn" type="button">Сохранить</button>
+        <p class="birth-hint">Укажи дату рождения — натальное Солнце посчитается точно. Если добавишь время и место — будут считаться все 10 планет, ASC, MC и дома. Данные хранятся локально и никуда не отправляются.</p>
+        <div class="birth-fields">
+          <div class="birth-row">
+            <label class="birth-label">Дата рождения<input type="date" id="birthInput" class="birth-input" max="${maxAttr}" /></label>
+            <label class="birth-label">Время (необязательно)<input type="time" id="birthTime" class="birth-input" /></label>
+          </div>
+          <details class="birth-details">
+            <summary>Часовой пояс и место рождения (для ASC и домов)</summary>
+            <div class="birth-fields" style="margin-top:10px">
+              <label class="birth-label">Часовой пояс на момент рождения
+                <select id="birthTz" class="birth-input">
+                  <option value="">— выбери —</option>
+                  ${tzOptionsHtml(180)}
+                </select>
+              </label>
+              <div class="birth-row">
+                <label class="birth-label">Широта (°N)<input type="number" id="birthLat" class="birth-input" step="0.0001" placeholder="55.7558" /></label>
+                <label class="birth-label">Долгота (°E)<input type="number" id="birthLon" class="birth-input" step="0.0001" placeholder="37.6173" /></label>
+              </div>
+              <label class="birth-label">Название места (для отображения)<input type="text" id="birthPlace" class="birth-input" placeholder="Москва" /></label>
+            </div>
+          </details>
+          <div><button id="birthSaveBtn" class="birth-btn" type="button">Сохранить</button></div>
         </div>
       `;
+      return;
     }
+
+    // Если данные есть — показываем сводку + редактирование в accordion
+    const dateRu = formatBirthLocalDate(birth);
+    const sunInfo = natalSun
+      ? `☉ ${signs[natalSun.signIndex].cases.nom} ${(natalSun.lon % 30).toFixed(1)}°`
+      : '☉ ?';
+    const timeInfo = birth.time ? ` · ${birth.time}` : '';
+    const tzInfo = birth.tzOffsetMin != null
+      ? ` (${(TZ_OPTIONS.find(o => o.v === birth.tzOffsetMin) || {}).l || 'UTC offset ' + birth.tzOffsetMin + ' мин'})`
+      : '';
+    const placeInfo = birth.place ? ` · ${birth.place}` : '';
+    birthWrapper.innerHTML = `
+      <p class="birth-info">${sunInfo} · ${dateRu}${timeInfo}${tzInfo}${placeInfo}</p>
+      <details class="birth-details">
+        <summary>Изменить данные рождения</summary>
+        <div class="birth-fields" style="margin-top:10px">
+          <div class="birth-row">
+            <label class="birth-label">Дата<input type="date" id="birthInput" class="birth-input" max="${maxAttr}" value="${birth.date}" /></label>
+            <label class="birth-label">Время<input type="time" id="birthTime" class="birth-input" value="${birth.time || ''}" /></label>
+          </div>
+          <label class="birth-label">Часовой пояс
+            <select id="birthTz" class="birth-input">
+              <option value="">— не указан —</option>
+              ${tzOptionsHtml(birth.tzOffsetMin != null ? birth.tzOffsetMin : null)}
+            </select>
+          </label>
+          <div class="birth-row">
+            <label class="birth-label">Широта (°N)<input type="number" id="birthLat" class="birth-input" step="0.0001" value="${birth.lat != null ? birth.lat : ''}" placeholder="55.7558" /></label>
+            <label class="birth-label">Долгота (°E)<input type="number" id="birthLon" class="birth-input" step="0.0001" value="${birth.lon != null ? birth.lon : ''}" placeholder="37.6173" /></label>
+          </div>
+          <label class="birth-label">Место<input type="text" id="birthPlace" class="birth-input" value="${birth.place || ''}" placeholder="Москва" /></label>
+          <div class="birth-row">
+            <button id="birthSaveBtn" class="birth-btn" type="button">Сохранить</button>
+            <button id="birthClearBtn" class="birth-btn-link" type="button">Удалить данные</button>
+          </div>
+        </div>
+      </details>
+    `;
+  }
+
+  // Считывает поля формы и сохраняет
+  function collectAndSaveBirth() {
+    const dateInp = document.getElementById('birthInput');
+    const timeInp = document.getElementById('birthTime');
+    const tzInp   = document.getElementById('birthTz');
+    const latInp  = document.getElementById('birthLat');
+    const lonInp  = document.getElementById('birthLon');
+    const plInp   = document.getElementById('birthPlace');
+
+    const dateVal = dateInp && dateInp.value;
+    if (!dateVal || !/^\d{4}-\d{2}-\d{2}$/.test(dateVal)) return false;
+
+    const obj = { date: dateVal };
+    if (timeInp && /^\d{2}:\d{2}$/.test(timeInp.value)) obj.time = timeInp.value;
+    if (tzInp && tzInp.value !== '') {
+      const tzNum = parseInt(tzInp.value, 10);
+      if (Number.isFinite(tzNum)) obj.tzOffsetMin = tzNum;
+    }
+    if (latInp && latInp.value !== '') {
+      const v = parseFloat(latInp.value);
+      if (Number.isFinite(v) && v >= -90 && v <= 90) obj.lat = v;
+    }
+    if (lonInp && lonInp.value !== '') {
+      const v = parseFloat(lonInp.value);
+      if (Number.isFinite(v) && v >= -180 && v <= 180) obj.lon = v;
+    }
+    if (plInp && plInp.value.trim() !== '') obj.place = plInp.value.trim().slice(0, 60);
+
+    saveBirth(obj);
+    return true;
   }
 
   // Делегирование событий на контейнере birthWrapper
   birthWrapper.addEventListener('click', (e) => {
     const t = e.target;
     if (t && t.id === 'birthSaveBtn') {
-      const inp = document.getElementById('birthInput');
-      const v = inp && inp.value;
-      if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
-        saveBirthDate(v);
-        renderSigns();
-      }
+      if (collectAndSaveBirth()) renderSigns();
     } else if (t && t.id === 'birthClearBtn') {
-      clearBirthDate();
+      clearBirth();
       renderSigns();
     }
   });
+
+  function renderNatalCard(natal) {
+    if (!natal) { natalCard.hidden = true; return; }
+    natalCard.hidden = false;
+    const order = natal.hasTime
+      ? ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto']
+      : ['Sun','Moon','Mercury','Venus','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto'];
+    const pills = order.map(p => {
+      const o = natal.planets[p];
+      const d = (o.lon % 30).toFixed(0);
+      return `<span class="sky-pill">
+        <span class="sky-glyph">${PLANET_GLYPH[p]}</span>
+        <span>${PLANET_RU[p]} — ${ZODIAC_NOM_RU[o.sign]} ${d}°</span>
+      </span>`;
+    });
+    if (natal.asc) {
+      const o = natal.asc;
+      pills.push(`<span class="sky-pill"><span class="sky-glyph">Asc</span><span>${ZODIAC_NOM_RU[o.sign]} ${(o.lon % 30).toFixed(0)}°</span></span>`);
+    }
+    if (natal.mc) {
+      const o = natal.mc;
+      pills.push(`<span class="sky-pill"><span class="sky-glyph">MC</span><span>${ZODIAC_NOM_RU[o.sign]} ${(o.lon % 30).toFixed(0)}°</span></span>`);
+    }
+    natalPills.innerHTML = pills.join('');
+
+    let hint = '';
+    if (!natal.hasTime) {
+      hint = 'Без точного времени рождения Луна может быть неточной до ~7°, а ASC/MC и дома не считаются. Добавь время и часовой пояс для точной карты.';
+    } else if (!natal.hasPlace) {
+      hint = 'Время есть, но без координат рождения нельзя посчитать ASC, MC и дома. Добавь широту и долготу.';
+    } else {
+      const ascEl = ELEMENT_BY_SIGN[natal.asc.sign];
+      const sunEl = ELEMENT_BY_SIGN[natal.planets.Sun.sign];
+      const moonEl = ELEMENT_BY_SIGN[natal.planets.Moon.sign];
+      const elRu = { fire:'огня', earth:'земли', air:'воздуха', water:'воды' };
+      hint = `Солнце в стихии ${elRu[sunEl]}, Луна в стихии ${elRu[moonEl]}, Восходящий — стихия ${elRu[ascEl]}. Дома считаются по системе Whole Sign.`;
+    }
+    natalHint.textContent = hint;
+  }
 
   function renderSkyCard(sky) {
     const order = ['Sun','Moon','Mercury','Venus','Mars'];
@@ -1436,30 +1888,45 @@
     const now = new Date();
     const sky = getSkyState(now);
     const mode = pickDayMode(sky);
-    const natal = getNatalSunData();
+    const natalSun = getNatalSunData();
+    const birth = loadBirth();
+    const natal = birth ? computeNatal(birth) : null;
 
     todayLabel.textContent = `Сегодня • ${formatDateRu(now)} • ${mode.title}`;
-    renderBirthCard(natal);
+    renderBirthCard(natalSun);
+    renderNatalCard(natal);
     renderSkyCard(sky);
 
     // Сохраняем исходный индекс каждого знака (для аспектов),
     // но порядок отображения — со «своим» знаком первым.
     const order = signs.map((s, i) => ({ sign: s, index: i }));
-    if (natal) {
-      const ownIdx = order.findIndex(x => x.index === natal.signIndex);
+    if (natalSun) {
+      const ownIdx = order.findIndex(x => x.index === natalSun.signIndex);
       if (ownIdx > 0) {
         const [own] = order.splice(ownIdx, 1);
         order.unshift(own);
       }
     }
 
+    // Если есть натал — используем полную натальную логику только для своего знака.
+    // Для остальных 11 знаков остаётся приближение (мы не знаем их даты рождения).
     const html = order.map(({ sign, index }) => {
-      const love   = buildSection(sign, index, sky, 'love',   natal);
-      const work   = buildSection(sign, index, sky, 'work',   natal);
-      const energy = buildSection(sign, index, sky, 'energy', natal);
-      const advice = buildSection(sign, index, sky, 'advice', natal);
+      const isOwn = natalSun && natalSun.signIndex === index;
+      const useNatal = isOwn && natal;
 
-      const isOwn = natal && natal.signIndex === index;
+      let love, work, energy, advice;
+      if (useNatal) {
+        love   = buildSectionNatal(sign, index, sky, 'love',   natal);
+        work   = buildSectionNatal(sign, index, sky, 'work',   natal);
+        energy = buildSectionNatal(sign, index, sky, 'energy', natal);
+        advice = buildSectionNatal(sign, index, sky, 'advice', natal);
+      } else {
+        love   = buildSection(sign, index, sky, 'love',   natalSun);
+        work   = buildSection(sign, index, sky, 'work',   natalSun);
+        energy = buildSection(sign, index, sky, 'energy', natalSun);
+        advice = buildSection(sign, index, sky, 'advice', natalSun);
+      }
+
       const ownBadge = isOwn ? '<span class="own-badge">твой знак</span>' : '';
       const ownClass = isOwn ? ' own-sign' : '';
 
