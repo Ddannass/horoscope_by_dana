@@ -12,7 +12,7 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
 
-  <title>Horoscope PWA</title>
+  <title>Гороскопы</title>
 
   <style>
     :root, [data-theme="light"] {
@@ -445,6 +445,8 @@
 
   let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  let midnightTimer = null;
+
   root.setAttribute('data-theme', theme);
 
   const ua = navigator.userAgent.toLowerCase();
@@ -486,6 +488,12 @@
       month: 'long',
       year: 'numeric'
     }).format(date);
+  }
+
+  function getLocalDateKey() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
   }
 
   function createBlock(title, text) {
@@ -758,7 +766,7 @@
 
   function renderSigns() {
     const now = new Date();
-    const dateKey = now.toISOString().slice(0, 10);
+    const dateKey = getLocalDateKey();
     const globalSeed = hashString(dateKey);
     const mode = pick(dayModes, globalSeed, 0);
 
@@ -798,6 +806,7 @@
     }).join('');
 
     signsGrid.innerHTML = html;
+    setupActiveChips();
     setStatus('прогнозы на сегодня готовы.');
   }
 
@@ -829,6 +838,27 @@
     });
 
     sections.forEach(section => observer.observe(section));
+  }
+
+  function scheduleMidnightRefresh() {
+    if (midnightTimer) {
+      clearTimeout(midnightTimer);
+    }
+
+    const now = new Date();
+    const nextMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      0, 0, 5, 0
+    );
+
+    const delay = nextMidnight.getTime() - now.getTime();
+
+    midnightTimer = setTimeout(() => {
+      renderSigns();
+      scheduleMidnightRefresh();
+    }, delay);
   }
 
   if (isIOS && !isInStandaloneMode) {
@@ -880,7 +910,7 @@
 
   renderChips();
   renderSigns();
-  setupActiveChips();
+  scheduleMidnightRefresh();
 })();
 </script>
 </body>
