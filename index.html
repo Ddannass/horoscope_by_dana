@@ -12,14 +12,14 @@
   <link rel="manifest" href="./manifest.webmanifest">
   <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
 
-  <title>Гороскопы на каждый день</title>
+  <title>Horoscope PWA</title>
 
   <style>
     :root, [data-theme="light"] {
       --bg:#f7f6f2;
       --surface:#f9f8f5;
       --surface2:#fbfbf9;
-      --surface3:#f2efe9;
+      --surface3:#f1eee8;
       --text:#28251d;
       --muted:#67655f;
       --primary:#01696f;
@@ -28,14 +28,13 @@
       --inv:#f9f8f4;
       --r:18px;
       --shadow:0 10px 28px rgba(0,0,0,.08);
-      --sticky-top:78px;
     }
 
     [data-theme="dark"] {
       --bg:#171614;
       --surface:#1c1b19;
       --surface2:#201f1d;
-      --surface3:#242320;
+      --surface3:#262421;
       --text:#cdccca;
       --muted:#a5a39f;
       --primary:#4f98a3;
@@ -46,11 +45,12 @@
     }
 
     * { box-sizing:border-box; }
+
     html {
       -webkit-text-size-adjust:none;
       text-size-adjust:none;
       scroll-behavior:smooth;
-      scroll-padding-top:132px;
+      scroll-padding-top:140px;
     }
 
     body {
@@ -200,28 +200,17 @@
       background:rgba(255,255,255,.03);
     }
 
-    .sticky-nav-wrap {
-      position:sticky;
-      position:-webkit-sticky;
-      top:0;
-      z-index:20;
-      padding-top:4px;
+    .nav-card {
+      padding:14px;
+      display:grid;
+      gap:10px;
     }
 
-    .sticky-nav {
-      border:1px solid var(--border);
-      background:color-mix(in srgb, var(--surface) 88%, transparent);
-      backdrop-filter:blur(12px);
-      -webkit-backdrop-filter:blur(12px);
-      border-radius:18px;
-      box-shadow:var(--shadow);
-      padding:10px;
-    }
-
-    .sticky-nav-title {
-      font-size:13px;
+    .nav-title {
+      margin:0;
+      font-size:14px;
       color:var(--muted);
-      margin:0 0 8px;
+      font-weight:600;
     }
 
     .chips {
@@ -242,8 +231,9 @@
       flex:0 0 auto;
       display:inline-flex;
       align-items:center;
-      min-height:38px;
-      padding:8px 14px;
+      justify-content:center;
+      min-height:42px;
+      padding:10px 14px;
       border-radius:999px;
       border:1px solid var(--border);
       background:var(--surface3);
@@ -357,6 +347,11 @@
       .block {
         min-height:auto;
       }
+
+      .chip {
+        min-height:44px;
+        padding:10px 16px;
+      }
     }
   </style>
 </head>
@@ -393,18 +388,16 @@
     <h2>Что внутри каждого знака</h2>
     <div class="legend-grid">
       <div class="legend-item"><strong>Любовь</strong><br><span class="muted">Эмоции, отношения, симпатия, близость и честность.</span></div>
-      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Задачи, темп, деньги, решения, карьера и деловые контакты.</span></div>
+      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Задачи, карьера, темп, решения и деловые контакты.</span></div>
       <div class="legend-item"><strong>Энергия</strong><br><span class="muted">Состояние, ресурс, баланс, внутренний ритм и внимание к себе.</span></div>
-      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Один короткий ориентир, на что стоит опереться сегодня.</span></div>
+      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Короткий ориентир, на что стоит опереться именно сегодня.</span></div>
     </div>
   </section>
 
-  <div class="sticky-nav-wrap">
-    <nav class="sticky-nav" aria-label="Быстрая навигация по знакам">
-      <div class="sticky-nav-title">Быстрая навигация</div>
-      <div class="chips" id="chipsNav"></div>
-    </nav>
-  </div>
+  <section class="card nav-card" aria-label="Быстрая навигация">
+    <p class="nav-title">Быстрая навигация по знакам</p>
+    <div class="chips" id="chipsNav"></div>
+  </section>
 
   <section class="signs-grid" id="signsGrid"></section>
 
@@ -449,6 +442,7 @@
     {
       key:'aries',
       name:'Овен',
+      genitive:'овна',
       dates:'21 марта — 19 апреля',
       traits:['смелый','прямой','быстрый','инициативный'],
       vibe:'огненный напор',
@@ -459,6 +453,7 @@
     {
       key:'taurus',
       name:'Телец',
+      genitive:'тельца',
       dates:'20 апреля — 20 мая',
       traits:['спокойный','надёжный','чувственный','практичный'],
       vibe:'земная устойчивость',
@@ -469,6 +464,7 @@
     {
       key:'gemini',
       name:'Близнецы',
+      genitive:'близнецов',
       dates:'21 мая — 20 июня',
       traits:['любопытный','общительный','лёгкий','гибкий'],
       vibe:'воздушная подвижность',
@@ -479,6 +475,7 @@
     {
       key:'cancer',
       name:'Рак',
+      genitive:'рака',
       dates:'21 июня — 22 июля',
       traits:['чуткий','бережный','глубокий','интуитивный'],
       vibe:'эмоциональная глубина',
@@ -489,6 +486,7 @@
     {
       key:'leo',
       name:'Лев',
+      genitive:'льва',
       dates:'23 июля — 22 августа',
       traits:['яркий','щедрый','уверенный','заметный'],
       vibe:'солнечная выразительность',
@@ -499,6 +497,7 @@
     {
       key:'virgo',
       name:'Дева',
+      genitive:'девы',
       dates:'23 августа — 22 сентября',
       traits:['точный','разумный','собранный','наблюдательный'],
       vibe:'ясная собранность',
@@ -509,6 +508,7 @@
     {
       key:'libra',
       name:'Весы',
+      genitive:'весов',
       dates:'23 сентября — 22 октября',
       traits:['гармоничный','дипломатичный','тонкий','обаятельный'],
       vibe:'тонкий баланс',
@@ -519,6 +519,7 @@
     {
       key:'scorpio',
       name:'Скорпион',
+      genitive:'скорпиона',
       dates:'23 октября — 21 ноября',
       traits:['сильный','глубокий','магнитичный','проницательный'],
       vibe:'внутренняя интенсивность',
@@ -529,6 +530,7 @@
     {
       key:'sagittarius',
       name:'Стрелец',
+      genitive:'стрельца',
       dates:'22 ноября — 21 декабря',
       traits:['свободный','оптимистичный','живой','прямолинейный'],
       vibe:'широкий горизонт',
@@ -539,6 +541,7 @@
     {
       key:'capricorn',
       name:'Козерог',
+      genitive:'козерога',
       dates:'22 декабря — 19 января',
       traits:['собранный','амбициозный','стойкий','надёжный'],
       vibe:'спокойная сила',
@@ -549,6 +552,7 @@
     {
       key:'aquarius',
       name:'Водолей',
+      genitive:'водолея',
       dates:'20 января — 18 февраля',
       traits:['независимый','оригинальный','умный','нестандартный'],
       vibe:'свежий взгляд',
@@ -559,6 +563,7 @@
     {
       key:'pisces',
       name:'Рыбы',
+      genitive:'рыб',
       dates:'19 февраля — 20 марта',
       traits:['мечтательный','мягкий','интуитивный','сострадательный'],
       vibe:'тонкая чувствительность',
@@ -628,27 +633,27 @@
   ];
 
   const loveFrames = [
-    (sign, mode, trait, style, end) => `Для ${sign.name.toLowerCase()} в любви включается ${style}. ${mode.mood}, а значит особенно полезно ${pick(mode.love, hashString(sign.key + mode.key), 1)}. Твоя черта «${trait}» сейчас работает в плюс, если не пытаться контролировать всё заранее. ${end}`,
-    (sign, mode, trait, style, end) => `Личная сфера у ${sign.name.toLowerCase()} сегодня держится на энергии «${style}». Вместо догадок лучше ${pick(mode.love, hashString(mode.key + sign.key), 2)}. Когда проявляется твоя ${trait} сторона, отношения становятся теплее и честнее. ${end}`,
-    (sign, mode, trait, style, end) => `Сегодня в чувствах для ${sign.name.toLowerCase()} важны ${style} и эмоциональная аккуратность. День несёт настрой на ${mode.title}, поэтому стоит ${pick(mode.love, hashString('love' + sign.key), 3)}. Чем спокойнее ты в выражении чувств, тем сильнее отдача. ${end}`
+    (sign, mode, trait, style, end) => `Для ${sign.genitive} в любви включается ${style}. ${mode.mood}, а значит особенно полезно ${pick(mode.love, hashString(sign.key + mode.key), 1)}. Твоя черта «${trait}» сейчас работает в плюс, если не пытаться контролировать всё заранее. ${end}`,
+    (sign, mode, trait, style, end) => `Личная сфера у ${sign.genitive} сегодня держится на энергии «${style}». Вместо догадок лучше ${pick(mode.love, hashString(mode.key + sign.key), 2)}. Когда проявляется твоя ${trait} сторона, отношения становятся теплее и честнее. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня в чувствах для ${sign.genitive} важны ${style} и эмоциональная аккуратность. День несёт настрой на ${mode.title}, поэтому стоит ${pick(mode.love, hashString('love' + sign.key), 3)}. Чем спокойнее ты в выражении чувств, тем сильнее отдача. ${end}`
   ];
 
   const workFrames = [
-    (sign, mode, trait, style, end) => `В работе ${sign.name.toLowerCase()} сильнее всего проявляет ${style}. День подталкивает ${pick(mode.work, hashString('work' + sign.key), 1)}, а не распыляться на всё сразу. Твоя черта «${trait}» сегодня помогает закрепить результат, а не просто быстро отреагировать. ${end}`,
-    (sign, mode, trait, style, end) => `Деловой фон дня для ${sign.name.toLowerCase()} связан с темой «${style}». Сейчас важнее ${pick(mode.work, hashString(sign.key + 'job'), 2)}, чем пытаться угодить всем задачам одновременно. Сильнее всего сыграет твоя способность быть ${trait}. ${end}`,
-    (sign, mode, trait, style, end) => `Профессиональная часть дня у ${sign.name.toLowerCase()} идёт через ${style}. На фоне ${mode.title} особенно полезно ${pick(mode.work, hashString(mode.key + 'career'), 3)}. Если держаться ясного плана, усилия дадут более заметный эффект. ${end}`
+    (sign, mode, trait, style, end) => `В работе у ${sign.genitive} сильнее всего проявляется ${style}. День подталкивает ${pick(mode.work, hashString('work' + sign.key), 1)}, а не распыляться на всё сразу. Твоя черта «${trait}» сегодня помогает закрепить результат, а не просто быстро отреагировать. ${end}`,
+    (sign, mode, trait, style, end) => `Деловой фон дня для ${sign.genitive} связан с темой «${style}». Сейчас важнее ${pick(mode.work, hashString(sign.key + 'job'), 2)}, чем пытаться угодить всем задачам одновременно. Сильнее всего сыграет твоя способность быть ${trait}. ${end}`,
+    (sign, mode, trait, style, end) => `Профессиональная часть дня у ${sign.genitive} идёт через ${style}. На фоне ${mode.title} особенно полезно ${pick(mode.work, hashString(mode.key + 'career'), 3)}. Если держаться ясного плана, усилия дадут более заметный эффект. ${end}`
   ];
 
   const energyFrames = [
-    (sign, mode, trait, style, end) => `По энергии ${sign.name.toLowerCase()} сегодня важны ${style} и уважение к собственному ритму. День раскрывается лучше, если ${pick(mode.energy, hashString(sign.key + 'energy'), 1)}. Твоя ${trait} природа особенно хорошо чувствует, где стоит ускориться, а где — отпустить. ${end}`,
-    (sign, mode, trait, style, end) => `Внутренний ресурс ${sign.name.toLowerCase()} держится на теме «${style}». На фоне ${mode.title} лучше ${pick(mode.energy, hashString(mode.key + sign.key + 'e'), 2)}. Чем меньше перегруза, тем больше собранности и спокойной силы к вечеру. ${end}`,
-    (sign, mode, trait, style, end) => `Сегодня телу и настроению у ${sign.name.toLowerCase()} подойдут ${style}. Это не день для резких скачков, зато удачный момент, чтобы ${pick(mode.energy, hashString('body' + sign.key), 3)}. Тогда твоя ${trait} сторона сработает мягко и точно. ${end}`
+    (sign, mode, trait, style, end) => `По энергии у ${sign.genitive} сегодня важны ${style} и уважение к собственному ритму. День раскрывается лучше, если ${pick(mode.energy, hashString(sign.key + 'energy'), 1)}. Твоя ${trait} природа особенно хорошо чувствует, где стоит ускориться, а где — отпустить. ${end}`,
+    (sign, mode, trait, style, end) => `Внутренний ресурс у ${sign.genitive} держится на теме «${style}». На фоне ${mode.title} лучше ${pick(mode.energy, hashString(mode.key + sign.key + 'e'), 2)}. Чем меньше перегруза, тем больше собранности и спокойной силы к вечеру. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня телу и настроению у ${sign.genitive} подойдут ${style}. Это не день для резких скачков, зато удачный момент, чтобы ${pick(mode.energy, hashString('body' + sign.key), 3)}. Тогда твоя ${trait} сторона сработает мягко и точно. ${end}`
   ];
 
   const adviceFrames = [
-    (sign, mode, trait, style, end) => `Совет дня для ${sign.name.toLowerCase()}: ${pick(mode.advice, hashString('advice' + sign.key), 1)}. Тема дня — ${mode.title}, а значит не нужно спорить с естественным темпом событий. Оставайся ${trait} в главном и свободнее в мелочах. ${end}`,
-    (sign, mode, trait, style, end) => `Сегодня ${sign.name.toLowerCase()} лучше всего опираться на ${mode.title}. Практичная подсказка — ${pick(mode.advice, hashString(sign.key + 'tip'), 2)}. Когда ты включаешь своё качество «${trait}», даже простые шаги становятся очень точными. ${end}`,
-    (sign, mode, trait, style, end) => `Небольшой ориентир для ${sign.name.toLowerCase()}: ${pick(mode.advice, hashString(mode.key + sign.key + 'guide'), 3)}. День не требует идеальности, но хорошо откликается на ${style}. Главное — не терять связь с тем, что для тебя по-настоящему важно. ${end}`
+    (sign, mode, trait, style, end) => `Совет дня для ${sign.genitive}: ${pick(mode.advice, hashString('advice' + sign.key), 1)}. Тема дня — ${mode.title}, а значит не нужно спорить с естественным темпом событий. Оставайся ${trait} в главном и свободнее в мелочах. ${end}`,
+    (sign, mode, trait, style, end) => `Сегодня для ${sign.genitive} лучше всего опираться на ${mode.title}. Практичная подсказка — ${pick(mode.advice, hashString(sign.key + 'tip'), 2)}. Когда ты включаешь своё качество «${trait}», даже простые шаги становятся очень точными. ${end}`,
+    (sign, mode, trait, style, end) => `Небольшой ориентир для ${sign.genitive}: ${pick(mode.advice, hashString(mode.key + sign.key + 'guide'), 3)}. День не требует идеальности, но хорошо откликается на ${style}. Главное — не терять связь с тем, что для тебя по-настоящему важно. ${end}`
   ];
 
   function hashString(str) {
