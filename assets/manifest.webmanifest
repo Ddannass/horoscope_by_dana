@@ -1,27 +1,25 @@
 {
-  "name": "Astro Day",
-  "short_name": "Astro Day",
-  "description": "Гороскопы для телефона",
-  "lang": "ru",
-  "dir": "ltr",
-  "start_url": "/horoscope_by_dana/",
-  "scope": "/horoscope_by_dana/",
+  "name": "Horoscope PWA",
+  "short_name": "Horoscope",
+  "description": "Installable PWA test for Android Chrome and iPhone Safari",
+  "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#f7f6f2",
   "theme_color": "#01696f",
+  "lang": "ru",
   "icons": [
     {
-      "src": "/horoscope_by_dana/assets/icon-192.png",
+      "src": "./assets/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     },
     {
-      "src": "/horoscope_by_dana/assets/icon-512.png",
+      "src": "./assets/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ]
 }
