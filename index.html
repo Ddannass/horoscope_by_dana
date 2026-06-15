@@ -274,17 +274,17 @@
   });
 
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/horoscope_by_dana/assets/sw.js', {
-        scope: '/horoscope_by_dana/'
-      }).then(() => {
-        console.log('Service Worker registered');
-      }).catch((error) => {
-        console.error('Service Worker registration failed:', error);
-        installStatus.textContent = 'Сайт работает, но offline-кэш не подключился';
-      });
-    });
-  }
+  window.addEventListener('load', async () => {
+    try {
+      await navigator.serviceWorker.register('/horoscope_by_dana/sw.js');
+      console.log('Service Worker registered');
+      installStatus.textContent = 'Offline-кэш подключён';
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+      installStatus.textContent = 'Сайт работает, но offline-кэш не подключился';
+    }
+  });
+}
 })();
 </script>
 </body>
