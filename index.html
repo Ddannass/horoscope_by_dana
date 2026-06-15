@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#01696f">
+
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Horoscope">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" sizes="180x180" href="./assets/apple-touch-icon.png">
+
+  <title>Гороскопы</title>
+
+  <style>
+    :root, [data-theme="light"] {
+      --bg:#f7f6f2;
+      --surface:#f9f8f5;
+      --surface2:#fbfbf9;
+      --surface3:#f1eee8;
+      --text:#28251d;
+      --muted:#67655f;
+      --primary:#01696f;
+      --primary-soft:rgba(1,105,111,.10);
+      --border:#d4d1ca;
+      --inv:#f9f8f4;
+      --gold:#d19900;
+      --r:18px;
+      --shadow:0 10px 28px rgba(0,0,0,.08);
+    }
+
+    [data-theme="dark"] {
+      --bg:#171614;
+      --surface:#1c1b19;
+      --surface2:#201f1d;
+      --surface3:#262421;
+      --text:#cdccca;
+      --muted:#a5a39f;
+      --primary:#4f98a3;
+      --primary-soft:rgba(79,152,163,.14);
+      --border:#393836;
+      --inv:#2b2a28;
+      --gold:#e8af34;
+      --shadow:0 10px 28px rgba(0,0,0,.35);
+    }
+
+    * { box-sizing:border-box; }
+
+    html {
+      -webkit-text-size-adjust:none;
+      text-size-adjust:none;
+      scroll-behavior:smooth;
+      scroll-padding-top:140px;
+    }
+
+    body {
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font:16px/1.6 Inter,system-ui,sans-serif;
+      min-height:100dvh;
+    }
+
+    img { display:block; max-width:100%; height:auto; }
+    button, a { font:inherit; }
+
+    .app {
+      max-width:1100px;
+      margin:auto;
+      padding:16px;
+      display:grid;
+      gap:16px;
+    }
+
+    .top {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+
+    .brand {
+      display:flex;
+      gap:12px;
+      align-items:center;
+    }
+
+    .brand img {
+      width:52px;
+      height:52px;
+      border-radius:16px;
+      box-shadow:var(--shadow);
+    }
+
+    .brand-title {
+      margin:0;
+      font-size:24px;
+      line-height:1.1;
+      font-weight:800;
+    }
+
+    .brand-subtitle {
+      color:var(--muted);
+      font-size:15px;
+      margin-top:4px;
+    }
+
+    .controls {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .btn {
+      min-height:44px;
+      padding:10px 16px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--surface);
+      color:var(--text);
+      cursor:pointer;
+    }
+
+    .btn.primary {
+      background:var(--primary);
+      border-color:var(--primary);
+      color:var(--inv);
+    }
+
+    .card {
+      background:linear-gradient(180deg,var(--surface),var(--surface2));
+      border:1px solid var(--border);
+      border-radius:var(--r);
+      padding:20px;
+      box-shadow:var(--shadow);
+    }
+
+    .hero {
+      display:grid;
+      gap:12px;
+    }
+
+    h1 {
+      margin:0;
+      font-size:40px;
+      line-height:1.05;
+      letter-spacing:-0.03em;
+    }
+
+    h2 {
+      margin:0;
+      font-size:20px;
+      line-height:1.2;
+    }
+
+    p { margin:0; }
+    .muted { color:var(--muted); }
+    .status { font-size:14px; color:var(--muted); }
+
+    .today-row {
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    .pill {
+      display:inline-flex;
+      align-items:center;
+      min-height:34px;
+      padding:6px 12px;
+      border-radius:999px;
+      background:var(--primary-soft);
+      color:var(--primary);
+      border:1px solid var(--border);
+      font-size:14px;
+      white-space:nowrap;
+    }
+
+    .legend {
+      display:grid;
+      gap:8px;
+    }
+
+    .legend-grid {
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .legend-item {
+      padding:14px;
+      border:1px solid var(--border);
+      border-radius:14px;
+      background:rgba(255,255,255,.18);
+    }
+
+    [data-theme="dark"] .legend-item {
+      background:rgba(255,255,255,.03);
+    }
+
+    .nav-card {
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .sky-card {
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .sky-title {
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .sky-pills {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+    }
+
+    .sky-pill {
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--surface3);
+      color:var(--text);
+      font-size:13px;
+      line-height:1.2;
+    }
+
+    .sky-pill .sky-glyph {
+      font-size:15px;
+      color:var(--primary);
+    }
+
+    .sky-pill .sky-retro {
+      color:var(--gold);
+      font-weight:700;
+      font-size:11px;
+      margin-left:2px;
+    }
+
+    .sky-hint {
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .nav-title {
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .chips {
+      display:flex;
+      gap:8px;
+      overflow-x:auto;
+      white-space:nowrap;
+      -webkit-overflow-scrolling:touch;
+      scrollbar-width:none;
+      scroll-snap-type:x proximity;
+      padding-bottom:2px;
+    }
+
+    .chips::-webkit-scrollbar { display:none; }
+
+    .chip {
+      scroll-snap-align:start;
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-height:42px;
+      padding:10px 14px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:var(--surface3);
+      color:var(--text);
+      text-decoration:none;
+      transition:background .18s ease, color .18s ease, border-color .18s ease, transform .18s ease;
+    }
+
+    .chip:hover,
+    .chip.active {
+      background:var(--primary);
+      border-color:var(--primary);
+      color:var(--inv);
+      transform:translateY(-1px);
+    }
+
+    .signs-grid {
+      display:grid;
+      gap:16px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .sign-card {
+      display:grid;
+      gap:16px;
+      scroll-margin-top:150px;
+    }
+
+    .sign-head {
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      align-items:flex-start;
+    }
+
+    .sign-name {
+      margin:0;
+      font-size:28px;
+      line-height:1.05;
+      letter-spacing:-0.02em;
+    }
+
+    .sign-dates {
+      color:var(--muted);
+      font-size:14px;
+      margin-top:6px;
+    }
+
+    .sign-meta {
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+
+    .mini-pill {
+      display:inline-flex;
+      align-items:center;
+      min-height:28px;
+      padding:4px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.18);
+      color:var(--muted);
+      font-size:12px;
+      white-space:nowrap;
+    }
+
+    [data-theme="dark"] .mini-pill {
+      background:rgba(255,255,255,.03);
+    }
+
+    .blocks {
+      display:grid;
+      gap:10px;
+      grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+
+    .block {
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(255,255,255,.20);
+      display:grid;
+      gap:10px;
+      min-height:190px;
+    }
+
+    [data-theme="dark"] .block {
+      background:rgba(255,255,255,.03);
+    }
+
+    .block-top {
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .block-title {
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-size:15px;
+      font-weight:700;
+    }
+
+    .block-dot {
+      width:10px;
+      height:10px;
+      border-radius:999px;
+      background:var(--primary);
+      flex:0 0 auto;
+    }
+
+    .block-score {
+      font-size:14px;
+      font-weight:700;
+      color:var(--gold);
+      letter-spacing:.04em;
+      white-space:nowrap;
+    }
+
+    .block-text {
+      color:var(--text);
+      font-size:15px;
+      line-height:1.58;
+    }
+
+    .ios-hint {
+      display:grid;
+      gap:8px;
+    }
+
+    @media (max-width: 860px) {
+      .signs-grid,
+      .legend-grid,
+      .blocks {
+        grid-template-columns:1fr;
+      }
+
+      h1 {
+        font-size:34px;
+      }
+
+      .sign-name {
+        font-size:24px;
+      }
+
+      .block {
+        min-height:auto;
+      }
+
+      .chip {
+        min-height:44px;
+        padding:10px 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <div class="top">
+    <div class="brand">
+      <img src="./assets/icon-192.png" alt="App icon" width="52" height="52">
+      <div>
+        <div class="brand-title">Horoscope PWA</div>
+        <div class="brand-subtitle">Ежедневные гороскопы для всех 12 знаков</div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="themeBtn">Тема</button>
+      <button class="btn primary" id="installBtn" hidden>Установить приложение</button>
+    </div>
+  </div>
+
+  <section class="card hero">
+    <h1>Гороскоп на сегодня</h1>
+    <p class="muted">
+      Все прогнозы генерируются прямо на сайте и автоматически меняются каждый день.
+      У каждого знака есть 4 блока: Любовь, Работа, Энергия и Совет дня.
+    </p>
+    <div class="today-row">
+      <div class="pill" id="todayLabel">Сегодня</div>
+      <div class="status" id="status">Статус: готовим прогнозы.</div>
+    </div>
+  </section>
+
+  <section class="card legend">
+    <h2>Что внутри каждого знака</h2>
+    <div class="legend-grid">
+      <div class="legend-item"><strong>Любовь</strong><br><span class="muted">Эмоции, отношения, симпатия, близость и честность.</span></div>
+      <div class="legend-item"><strong>Работа</strong><br><span class="muted">Задачи, карьера, темп, решения и деловые контакты.</span></div>
+      <div class="legend-item"><strong>Энергия</strong><br><span class="muted">Состояние, ресурс, баланс, внутренний ритм и внимание к себе.</span></div>
+      <div class="legend-item"><strong>Совет дня</strong><br><span class="muted">Короткий ориентир, на что стоит опереться именно сегодня.</span></div>
+    </div>
+  </section>
+
+  <section class="card sky-card" aria-label="Небо сегодня">
+    <p class="sky-title">Небо сегодня</p>
+    <div class="sky-pills" id="skyPills"></div>
+    <p class="sky-hint" id="skyHint"></p>
+  </section>
+
+  <section class="card nav-card" aria-label="Быстрая навигация">
+    <p class="nav-title">Быстрая навигация по знакам</p>
+    <div class="chips" id="chipsNav"></div>
+  </section>
+
+  <section class="signs-grid" id="signsGrid"></section>
+
+  <section class="card ios-hint" id="iosHint" hidden>
+    <h2>Как установить на iPhone</h2>
+    <p>Открой сайт в Safari, нажми «Поделиться», затем выбери «На экран Домой» / Add to Home Screen.</p>
+    <div class="status">Safari → Поделиться → На экран Домой</div>
+  </section>
+</div>
+
+<script src="./assets/astronomy.browser.min.js"></script>
+<script>
+(() => {
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('themeBtn');
+  const installBtn = document.getElementById('installBtn');
+  const status = document.getElementById('status');
+  const iosHint = document.getElementById('iosHint');
+  const signsGrid = document.getElementById('signsGrid');
+  const todayLabel = document.getElementById('todayLabel');
+  const chipsNav = document.getElementById('chipsNav');
+  const skyPills = document.getElementById('skyPills');
+  const skyHint = document.getElementById('skyHint');
+
+  let deferredPrompt = null;
+  let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  let midnightTimer = null;
+  let signObserver = null;
+
+  root.setAttribute('data-theme', theme);
+
+  const ua = navigator.userAgent.toLowerCase();
+  const isIOS = /iphone|ipad|ipod/.test(ua);
+  const isInStandaloneMode =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+
+  themeBtn.addEventListener('click', () => {
+    theme = theme === 'dark' ? 'light' : 'dark';
+    root.setAttribute('data-theme', theme);
+  });
+
+  function setStatus(text) {
+    status.textContent = 'Статус: ' + text;
+  }
+
+  function ucFirst(str) {
+    if (!str) return str;
+    return str[0].toUpperCase() + str.slice(1);
+  }
+
+  function sentence(str) {
+    return ucFirst(String(str || '').trim());
+  }
+
+  function hashString(str) {
+    let h = 2166136261;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+    }
+    return Math.abs(h >>> 0);
+  }
+
+  function pick(arr, seed, offset = 0) {
+    return arr[(seed + offset) % arr.length];
+  }
+
+  function formatDateRu(date) {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    }).format(date);
+  }
+
+  function getLocalDateKey() {
+    const d = new Date();
+    d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+    return d.toISOString().slice(0, 10);
+  }
+
+  function scoreFromSeed(seed, shift = 0) {
+    return (Math.abs(seed + shift) % 5) + 1;
+  }
+
+  function renderScore(score) {
+    return '★'.repeat(score) + '☆'.repeat(5 - score);
+  }
+
+  function createBlock(title, text, score) {
+    return `
+      <div class="block">
+        <div class="block-top">
+          <div class="block-title">
+            <span class="block-dot"></span>
+            <span>${title}</span>
+          </div>
+          <div class="block-score" aria-label="Оценка ${score} из 5">${renderScore(score)}</div>
+        </div>
+        <div class="block-text">${text}</div>
+      </div>
+    `;
+  }
+
+  const elements = {
+    fire: {
+      label:'Огонь',
+      love:[
+        'яркий жест','живое притяжение','открытая страсть','смелое признание',
+        'искренний импульс','романтический огонь','желание не скрывать симпатию'
+      ],
+      work:[
+        'смелый ход','быстрое включение','уверенная подача','готовность брать инициативу',
+        'решительный старт','напор без лишней раскачки','лидерский импульс'
+      ],
+      energy:[
+        'огненный тонус','желание двигаться','внутренний жар','живой драйв',
+        'быстрая мобилизация','желание действовать','ощущение внутреннего топлива'
+      ]
+    },
+    earth: {
+      label:'Земля',
+      love:[
+        'надёжная близость','ощущение безопасности','тёплая стабильность','тихая верность',
+        'забота делом','чувство опоры','спокойное доверие'
+      ],
+      work:[
+        'проверенный шаг','практичный результат','укрепление базы','понятный процесс',
+        'рабочая устойчивость','польза без лишнего шума','надёжный подход'
+      ],
+      energy:[
+        'ровный ритм','заземлённость','спокойный ресурс','телесная устойчивость',
+        'размеренный темп','ощущение почвы под ногами','бережная собранность'
+      ]
+    },
+    air: {
+      label:'Воздух',
+      love:[
+        'разговорное притяжение','лёгкий флирт','обмен мыслями','интеллектуальная искра',
+        'интересный диалог','остроумный контакт','ощущение свободы в общении'
+      ],
+      work:[
+        'умный ход','коммуникация','сборка идей','быстрый обмен информацией',
+        'гибкая договорённость','точная формулировка','мыслительная ловкость'
+      ],
+      energy:[
+        'свежесть ума','быстрое переключение','ментальная подвижность','лёгкость восприятия',
+        'интерес к новому','свободное дыхание мысли','живой интеллектуальный тонус'
+      ]
+    },
+    water: {
+      label:'Вода',
+      love:[
+        'эмоциональная связка','сердечный отклик','тонкая близость','душевная глубина',
+        'бережная нежность','ощущение внутреннего совпадения','интуитивное доверие'
+      ],
+      work:[
+        'чувствование момента','гибкий отклик','глубокая включённость','тонкая настройка на людей',
+        'интуитивный выбор','эмоциональная точность','работа через внутренний слух'
+      ],
+      energy:[
+        'внутренний слух','плавное восстановление','эмоциональный ритм','мягкая регенерация',
+        'тонкая чувствительность','бережное течение сил','глубокий внутренний отклик'
+      ]
+    }
+  };
+
+  const modalities = {
+    cardinal: {
+      label:'Кардинальный',
+      style:[
+        'начать','задать тон','первым сдвинуть ситуацию','обозначить направление',
+        'не ждать лишнего сигнала','вывести дело из точки покоя','сделать первый ясный шаг'
+      ],
+      advice:[
+        'не тянуть со стартом','обозначить направление','запустить движение','быстрее входить в действие',
+        'не откладывать первый шаг','включаться в день активнее','задавать ритм, а не ждать его'
+      ]
+    },
+    fixed: {
+      label:'Фиксированный',
+      style:[
+        'удержать линию','закрепить результат','не отдавать центр тяжести','сохранять выбранный курс',
+        'не расшатывать рабочее','стоять на главном','укреплять уже найденную опору'
+      ],
+      advice:[
+        'сохранять курс','не ломать то, что уже работает','упрямо держать главное','не размениваться на лишнее',
+        'укреплять сильное','не отдавать фокус второстепенному','двигаться через устойчивость'
+      ]
+    },
+    mutable: {
+      label:'Мутабельный',
+      style:[
+        'подстроиться без потери сути','мягко сменить тактику','поймать меняющийся ритм','корректировать ход по ситуации',
+        'не застывать в одной версии','оставаться гибким','разворачивать ситуацию себе в пользу'
+      ],
+      advice:[
+        'быть гибче','разрешить корректировку','двигаться через адаптацию','не цепляться за устаревший сценарий',
+        'оставлять место для манёвра','менять способ, сохраняя цель','не спорить с меняющимся днём'
+      ]
+    }
+  };
+
+  const dayModes = [
+    {
+      key:'clarity',
+      title:'день ясности',
+      mood:'сегодня многое становится понятнее, если убрать лишний шум',
+      add:[
+        'полезно смотреть в суть без декоративных отвлечений',
+        'всё лишнее сегодня довольно быстро отслаивается',
+        'точность оказывается сильнее суеты'
+      ]
+    },
+    {
+      key:'momentum',
+      title:'день движения',
+      mood:'сегодня полезнее идти вперёд, чем слишком долго готовиться',
+      add:[
+        'первый шаг даёт больше, чем бесконечная подготовка',
+        'день любит тех, кто не буксует на старте',
+        'скорость включения сегодня особенно важна'
+      ]
+    },
+    {
+      key:'balance',
+      title:'день баланса',
+      mood:'лучший результат приходит там, где есть чувство меры и внутренний ритм',
+      add:[
+        'перегибы быстро утомляют и мешают фокусу',
+        'бережный темп сегодня даёт больше, чем жёсткий нажим',
+        'равновесие становится рабочим инструментом'
+      ]
+    },
+    {
+      key:'connection',
+      title:'день контакта',
+      mood:'многое сегодня открывается через разговор, отклик и правильную интонацию',
+      add:[
+        'нужные слова и правильный тон решают очень многое',
+        'контакт с людьми может неожиданно ускорить результат',
+        'живой обмен сегодня полезнее закрытой позиции'
+      ]
+    },
+    {
+      key:'reset',
+      title:'день перезагрузки',
+      mood:'сегодня хорошо отпускается то, что уже перестало работать',
+      add:[
+        'освобождение от лишнего даёт заметный приток сил',
+        'обновление сценария сегодня почти неизбежно идёт в плюс',
+        'лучше не держаться за форму, которая уже устарела'
+      ]
+    }
+  ];
+
+  const endings = [
+    'Именно так день откроется легче.',
+    'Это даст нужную внутреннюю опору.',
+    'Так результат проявится заметнее.',
+    'Именно в этом сегодня скрыта сила.',
+    'Так ты быстрее почувствуешь верный ритм.',
+    'Это соберёт день в более цельную линию.',
+    'Так день будет ощущаться точнее и спокойнее.',
+    'Именно это сейчас даёт лучший отклик.',
+    'Так получится сохранить живой контакт с собой.',
+    'Это позволит прожить день без лишнего перекоса.'
+  ];
+
+  const signs = [
+    {
+      key:'aries',
+      name:'Овен',
+      cases:{ nom:'Овен', gen:'овна', dat:'овну', acc:'овна', ins:'овном', prep:'овне' },
+      dates:'21 марта — 19 апреля',
+      element:'fire',
+      modality:'cardinal',
+      archetype:'инициатор',
+      loveCore:['прямой интерес','смелый шаг','честный жест','готовность сказать первым','непрятаная симпатия','живой романтический импульс'],
+      workCore:['быстрый старт','захват инициативы','решение без раскачки','смелый вход в задачу','готовность вести за собой','первый уверенный ход']
+    },
+    {
+      key:'taurus',
+      name:'Телец',
+      cases:{ nom:'Телец', gen:'тельца', dat:'тельцу', acc:'тельца', ins:'тельцом', prep:'тельце' },
+      dates:'20 апреля — 20 мая',
+      element:'earth',
+      modality:'fixed',
+      archetype:'стабилизатор',
+      loveCore:['тёплая надёжность','ощутимая забота','спокойная близость','мягкая верность','честная телесная теплота','ощущение устойчивого присутствия'],
+      workCore:['практичный ход','укрепление результата','спокойное наращивание','разумная устойчивость','работа на длинную дистанцию','надёжное закрепление']
+    },
+    {
+      key:'gemini',
+      name:'Близнецы',
+      cases:{ nom:'Близнецы', gen:'близнецов', dat:'близнецам', acc:'близнецов', ins:'близнецами', prep:'близнецах' },
+      dates:'21 мая — 20 июня',
+      element:'air',
+      modality:'mutable',
+      archetype:'вестник',
+      loveCore:['живой диалог','лёгкая искра','игра смысла','быстрый словесный контакт','интерес через разговор','чувство интеллектуального совпадения'],
+      workCore:['обмен идеями','связи между людьми','быстрая сборка информации','удачный разговор','скоростная ориентация в теме','мыслительная пластичность']
+    },
+    {
+      key:'cancer',
+      name:'Рак',
+      cases:{ nom:'Рак', gen:'рака', dat:'раку', acc:'рака', ins:'раком', prep:'раке' },
+      dates:'21 июня — 22 июля',
+      element:'water',
+      modality:'cardinal',
+      archetype:'хранитель',
+      loveCore:['эмоциональная безопасность','бережная близость','тихое доверие','ощущение, что рядом можно выдохнуть','нежная включённость','сердечная опора'],
+      workCore:['внимание к атмосфере','осторожный шаг','интуитивная точность','бережное управление процессом','чуткость к настроению людей','правильная эмоциональная дистанция']
+    },
+    {
+      key:'leo',
+      name:'Лев',
+      cases:{ nom:'Лев', gen:'льва', dat:'льву', acc:'льва', ins:'львом', prep:'льве' },
+      dates:'23 июля — 22 августа',
+      element:'fire',
+      modality:'fixed',
+      archetype:'сияющий',
+      loveCore:['тёплое внимание','романтический жест','открытое восхищение','щедрость сердца','красивое проявление чувств','живое чувство собственной ценности'],
+      workCore:['видимая подача','смелое лидерство','творческая уверенность','готовность занять центр сцены','яркое присутствие','умение вести за собой']
+    },
+    {
+      key:'virgo',
+      name:'Дева',
+      cases:{ nom:'Дева', gen:'девы', dat:'деве', acc:'деву', ins:'девой', prep:'деве' },
+      dates:'23 августа — 22 сентября',
+      element:'earth',
+      modality:'mutable',
+      archetype:'аналитик',
+      loveCore:['деликатная внимательность','тихая забота','честность в деталях','забота без шума','точное попадание в нужды другого','аккуратная искренность'],
+      workCore:['сборка порядка','точная настройка','практическая польза','умное улучшение деталей','наведение системы','спокойная оптимизация']
+    },
+    {
+      key:'libra',
+      name:'Весы',
+      cases:{ nom:'Весы', gen:'весов', dat:'весам', acc:'весы', ins:'весами', prep:'весах' },
+      dates:'23 сентября — 22 октября',
+      element:'air',
+      modality:'cardinal',
+      archetype:'дипломат',
+      loveCore:['взаимность','красивый обмен','тонкая гармония','уважительный отклик','лёгкая эмоциональная эстетика','деликатное сближение'],
+      workCore:['согласование интересов','дипломатичный разговор','поиск баланса','умение свести позиции','красиво выстроенный диалог','мягкое наведение порядка в отношениях']
+    },
+    {
+      key:'scorpio',
+      name:'Скорпион',
+      cases:{ nom:'Скорпион', gen:'скорпиона', dat:'скорпиону', acc:'скорпиона', ins:'скорпионом', prep:'скорпионе' },
+      dates:'23 октября — 21 ноября',
+      element:'water',
+      modality:'fixed',
+      archetype:'алхимик',
+      loveCore:['глубокое притяжение','честность без масок','эмоциональная интенсивность','магнитное чувство правды','желание настоящей близости','сила внутренней связи'],
+      workCore:['стратегическая точность','контроль глубины','видение скрытого','умение работать в корне темы','сильный фокус','влияние без лишнего шума']
+    },
+    {
+      key:'sagittarius',
+      name:'Стрелец',
+      cases:{ nom:'Стрелец', gen:'стрельца', dat:'стрельцу', acc:'стрельца', ins:'стрельцом', prep:'стрельце' },
+      dates:'22 ноября — 21 декабря',
+      element:'fire',
+      modality:'mutable',
+      archetype:'исследователь',
+      loveCore:['лёгкая искренность','свободный интерес','радость общего движения','желание дышать рядом свободно','романтика без тесных рамок','ощущение общей перспективы'],
+      workCore:['большая перспектива','рост','смысл выше рутины','поиск горизонта','движение через интерес','вера в расширение возможностей']
+    },
+    {
+      key:'capricorn',
+      name:'Козерог',
+      cases:{ nom:'Козерог', gen:'козерога', dat:'козерогу', acc:'козерога', ins:'козерогом', prep:'козероге' },
+      dates:'22 декабря — 19 января',
+      element:'earth',
+      modality:'cardinal',
+      archetype:'строитель',
+      loveCore:['надёжное присутствие','серьёзный жест','честность в поступках','спокойная зрелость чувств','внимание через действие','устойчивая эмоциональная ответственность'],
+      workCore:['структура','результат','долгая опора','сильный каркас дня','рабочая зрелость','способность собирать сложное в систему']
+    },
+    {
+      key:'aquarius',
+      name:'Водолей',
+      cases:{ nom:'Водолей', gen:'водолея', dat:'водолею', acc:'водолея', ins:'водолеем', prep:'водолее' },
+      dates:'20 января — 18 февраля',
+      element:'air',
+      modality:'fixed',
+      archetype:'новатор',
+      loveCore:['необычный контакт','дружеская искренность','свобода внутри близости','интеллектуальная честность','небанальное совпадение','уважение к индивидуальности'],
+      workCore:['новый взгляд','нестандартное решение','интеллектуальный прорыв','способность видеть иначе','точный выход из шаблона','умение не мыслить по инерции']
+    },
+    {
+      key:'pisces',
+      name:'Рыбы',
+      cases:{ nom:'Рыбы', gen:'рыб', dat:'рыбам', acc:'рыб', ins:'рыбами', prep:'рыбах' },
+      dates:'19 февраля — 20 марта',
+      element:'water',
+      modality:'mutable',
+      archetype:'мистик',
+      loveCore:['душевная связка','тонкое притяжение','эмпатия без шума','нежное узнавание друг друга','ощущение глубинного отклика','атмосфера мягкой близости'],
+      workCore:['творческое решение','гибкий подход','чувство течения','умение обойти жёсткий тупик','интуитивное понимание процесса','работа через тонкое восприятие']
+    }
+  ];
+
+  const templates = {
+    love: [
+      (sign, ctx, end) => `Для ${sign.cases.gen} любовь сегодня начинается с того, что чувствуется по-настоящему. ${ctx.modeMood}. Лучше всего работают ${ctx.core}, ${ctx.elementLove} и готовность ${ctx.modalityStyle}. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} в чувствах сегодня важны искренность и живой отклик. Если не усложнять лишнего, именно ${ctx.core} может задать дню очень тёплый тон. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} сегодня особенно идёт атмосфера, где можно быть честн${ctx.endingA} в чувствах. Чем меньше натяжки и игры, тем быстрее появляется настоящая близость. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} в личной сфере многое решает не громкость, а подлинность. Сейчас сильнее обычного работают ${ctx.elementLove}, ${ctx.extraLove} и ощущение, что эмоции не нужно прятать. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} день в любви разворачивается лучше там, где есть ${ctx.core} и пространство для естественного сближения. ${ctx.modeAdd} ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} полезно не ускорять чувства искусственно. Всё настоящее сегодня собирается вокруг таких вещей, как ${ctx.elementLove}, ${ctx.core} и ясность намерения. ${end}`),
+      (sign, ctx, end) => `Если говорить о любви, для ${sign.cases.gen} день не про формальность, а про внутренний отклик. Чем точнее совпадают слова и чувство, тем заметнее становится взаимность. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} сегодня может особенно хорошо получиться мягкое, но честное сближение. Здесь работают ${ctx.extraLove}, ${ctx.elementLove} и способность ${ctx.modalityStyle}. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} стоит меньше думать о правильной форме и больше — о живом контакте. Настоящее чувство сейчас легче проявляется без лишнего контроля. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} симпатия сегодня оживает через нюанс, интонацию и точный жест. Не всё важное будет громким, но многое окажется очень настоящим. ${end}`
+    ],
+    work: [
+      (sign, ctx, end) => `В работе у ${sign.cases.gen} сегодня особенно сильны ${ctx.workCore}, ${ctx.elementWork} и умение ${ctx.modalityStyle}. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} полезно сосредоточиться на том, что реально двигает результат. Всё, что усиливает опору, структуру или ясность, сейчас сработает особенно точно. ${end}`),
+      (sign, ctx, end) => `Профессиональная часть дня у ${sign.cases.gen} идёт лучше, если не распыляться. Сегодня выигрышны конкретный ход, рабочий ритм и внимание к тому, что даёт реальный эффект. ${end}`,
+      (sign, ctx, end) => `Для ${sign.cases.gen} в делах сейчас важнее не скорость ради скорости, а точность входа в задачу. Здесь помогают ${ctx.workCore}, ${ctx.elementWork} и понимание, где именно лежит главный рычаг. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} рабочий день становится сильнее, если не тратить фокус на лишние ходы. Всё, что связано с ${ctx.extraWork}, сегодня будет особенно уместно. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} сегодня стоит действовать там, где уже есть реальная почва. Даже небольшой, но точный шаг принесёт больше пользы, чем широкий, но пустой размах. ${end}`),
+      (sign, ctx, end) => `В профессиональной сфере для ${sign.cases.gen} хороша стратегия меньшего шума и большей собранности. ${ctx.modeAdd} ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} сегодня могут особенно ярко сработать ${ctx.elementWork}, ${ctx.workCore} и способность спокойно удерживать приоритет. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} полезно не размывать внимание на десять тем сразу. Там, где появляется рабочая ось дня, и находится лучший результат. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} работа сегодня требует не показного напряжения, а умного распределения усилий. Именно это позволит сохранить темп и не выгореть на середине пути. ${end}`
+    ],
+    energy: [
+      (sign, ctx, end) => `Энергия у ${sign.cases.gen} сегодня связана с тем, как выстроен внутренний ритм. Особенно полезны ${ctx.elementEnergy} и право ${ctx.modalityAdvice}. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} стоит бережнее обходиться с собственным ресурсом. Когда день идёт в согласии с природным темпом, сил становится заметно больше. ${end}`),
+      (sign, ctx, end) => `Ресурс ${sign.cases.gen} раскрывается лучше, если убрать лишний шум и не тратить силы на второстепенное. Сейчас важнее качество внутреннего состояния, чем внешний разгон. ${end}`,
+      (sign, ctx, end) => `Для ${sign.cases.gen} энергетика дня собирается там, где есть ${ctx.elementEnergy}, немного воздуха для себя и отказ от ненужного давления. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} сегодня тело и настроение особенно чувствительны к темпу. Если не идти против своей природы, восстановление пойдёт быстрее и глубже. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} полезно чуть внимательнее отнестись к границам, паузам и фоновому шуму. Иногда сила возвращается не через ускорение, а через вычитание лишнего. ${end}`),
+      (sign, ctx, end) => `Ресурс для ${sign.cases.gen} сегодня связан не только со сном или отдыхом, но и с тем, насколько честно распределены внутренние силы. Всё искусственное быстро утомляет. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} в энергетическом плане день лучше идёт через простые и рабочие опоры: ${ctx.extraEnergy}, ${ctx.elementEnergy} и снижение перегруза. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} стоит помнить, что не каждый спад — это проблема. Иногда это просто сигнал сменить ритм и выбрать более бережный ход. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} сегодня особенно ценна способность вовремя остановиться, выдохнуть и вернуть себе внутреннюю ось. На этом фоне весь день начинает складываться ровнее. ${end}`
+    ],
+    advice: [
+      (sign, ctx, end) => `Совет для ${sign.cases.gen}: сегодня полезно ${ctx.modalityAdvice} и держаться того, что ощущается живым и настоящим. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} лучше не пытаться прожить этот день чужим способом. Когда действия совпадают с внутренней природой, всё складывается ровнее. ${end}`),
+      (sign, ctx, end) => `Сегодня для ${sign.cases.gen} хороший ориентир — меньше лишней борьбы, больше точного движения в свою сторону. Именно так получится сохранить правильный фокус. ${end}`,
+      (sign, ctx, end) => `Совет дня для ${sign.cases.gen} звучит просто: не переусложнять там, где уже есть ясный внутренний отклик. Всё важное сегодня довольно быстро покажет свой настоящий вес. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} полезно выбрать одну главную линию дня и не распыляться вокруг второстепенного. Это сохранит и силы, и качество внимания. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} сегодня работает стратегия точного присутствия в своём дне. Не нужно быть везде — достаточно быть по-настоящему там, где сейчас есть смысл. ${end}`,
+      (sign, ctx, end) => `У ${sign.cases.gen} хороший ориентир на сегодня — не спорить с тем, что уже очевидно внутренне. Иногда самый зрелый шаг — просто признать верное направление и не отступать от него. ${end}`,
+      (sign, ctx, end) => sentence(`${sign.cases.dat} стоит меньше ориентироваться на чужой шум и больше — на собственную ось. День станет заметно чище, если не отдавать центр тяжести наружу. ${end}`),
+      (sign, ctx, end) => `Для ${sign.cases.gen} лучший совет на сегодня — действовать не из нервного рывка, а из точного понимания, зачем это нужно. Тогда и результат будет устойчивее. ${end}`,
+      (sign, ctx, end) => `Сегодня для ${sign.cases.gen} особенно важно не терять контакт с собственной мерой. Когда внутренний ритм не предан, многое начинает складываться почти само. ${end}`
+    ]
+  };
+
+  function feminineEnding(sign) {
+    return sign.name === 'Дева' ? 'ой' : 'ым';
+  }
+
+  // ============================================================
+  //  Астрологический движок
+  // ============================================================
+
+  const ZODIAC_RU = ['Овне','Тельце','Близнецах','Раке','Льве','Деве','Весах','Скорпионе','Стрельце','Козероге','Водолее','Рыбах'];
+  const ZODIAC_NOM_RU = ['Овен','Телец','Близнецы','Рак','Лев','Дева','Весы','Скорпион','Стрелец','Козерог','Водолей','Рыбы'];
+  const ELEMENT_BY_SIGN = ['fire','earth','air','water','fire','earth','air','water','fire','earth','air','water'];
+  const COMPATIBLE_ELEMENTS = {
+    fire:  ['fire','air'],
+    earth: ['earth','water'],
+    air:   ['air','fire'],
+    water: ['water','earth']
+  };
+  const PLANET_GLYPH = { Sun:'☉', Moon:'☽', Mercury:'☿', Venus:'♀', Mars:'♂' };
+  const PLANET_RU = { Sun:'Солнце', Moon:'Луна', Mercury:'Меркурий', Venus:'Венера', Mars:'Марс' };
+
+  function geoEclLon(body, date) {
+    if (body === 'Moon') {
+      return Astronomy.EclipticGeoMoon(date).lon;
+    }
+    const gv = Astronomy.GeoVector(body, date, true);
+    return Astronomy.Ecliptic(gv).elon;
+  }
+
+  function normalizeLon(lon) {
+    return ((lon % 360) + 360) % 360;
+  }
+
+  function getSkyState(date) {
+    const tomorrow = new Date(date.getTime() + 86400000);
+    const lon = {};
+    const sign = {};
+    ['Sun','Moon','Mercury','Venus','Mars'].forEach(p => {
+      lon[p] = normalizeLon(geoEclLon(p, date));
+      sign[p] = Math.floor(lon[p] / 30);
+    });
+    const retrograde = { Sun:false, Moon:false };
+    ['Mercury','Venus','Mars'].forEach(p => {
+      let diff = geoEclLon(p, tomorrow) - lon[p];
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      retrograde[p] = diff < 0;
+    });
+    const phase = Astronomy.MoonPhase(date); // 0..360
+    let phaseName, phaseShort;
+    if (phase < 22.5)       { phaseName = 'новолуние';            phaseShort = 'новолуние'; }
+    else if (phase < 67.5)  { phaseName = 'растущий серп';        phaseShort = 'растёт'; }
+    else if (phase < 112.5) { phaseName = 'первая четверть';      phaseShort = '1-я четв.'; }
+    else if (phase < 157.5) { phaseName = 'растущая луна';        phaseShort = 'растёт'; }
+    else if (phase < 202.5) { phaseName = 'полнолуние';           phaseShort = 'полнолуние'; }
+    else if (phase < 247.5) { phaseName = 'убывающая луна';       phaseShort = 'убывает'; }
+    else if (phase < 292.5) { phaseName = 'последняя четверть';   phaseShort = '4-я четв.'; }
+    else                    { phaseName = 'старая луна';          phaseShort = 'убывает'; }
+    return {
+      lon, sign, retrograde,
+      moonPhase: phase,
+      moonWaxing: phase < 180,
+      phaseName, phaseShort
+    };
+  }
+
+  // Аспект транзитной планеты к натальному Солнцу (середина знака)
+  function getAspect(natalLon, transitLon) {
+    let d = Math.abs(natalLon - transitLon) % 360;
+    if (d > 180) d = 360 - d;
+    const defs = [
+      { name:'conjunction', angle:0,   orb:9, quality:'strong' },
+      { name:'sextile',     angle:60,  orb:6, quality:'good'   },
+      { name:'square',      angle:90,  orb:7, quality:'tense'  },
+      { name:'trine',       angle:120, orb:8, quality:'great'  },
+      { name:'opposition',  angle:180, orb:8, quality:'tense'  }
+    ];
+    for (const a of defs) {
+      if (Math.abs(d - a.angle) <= a.orb) return a;
+    }
+    return { name:'none', quality:'neutral' };
+  }
+
+  function natalSunLon(signIndex) {
+    return signIndex * 30 + 15;
+  }
+
+  // Звёздная оценка из аспекта + ретроградности
+  function starScore(aspect, retrograde, elementMatch) {
+    let s = 3;
+    if (aspect.quality === 'great') s += 2;
+    else if (aspect.quality === 'good') s += 1;
+    else if (aspect.quality === 'strong') s += 1; // соединение усиливает
+    else if (aspect.quality === 'tense') s -= 1;
+    if (elementMatch === 'home') s += 1;
+    else if (elementMatch === 'challenging') s -= 1;
+    if (retrograde) s -= 1;
+    return Math.max(1, Math.min(5, s));
+  }
+
+  // Совместимость стихий между транзитом и натальным знаком
+  function elementMatch(transitSignIndex, natalSignIndex) {
+    const t = ELEMENT_BY_SIGN[transitSignIndex];
+    const n = ELEMENT_BY_SIGN[natalSignIndex];
+    if (t === n) return 'home';
+    if (COMPATIBLE_ELEMENTS[n].includes(t)) return 'friendly';
+    return 'challenging';
+  }
+
+  // Привкус аспекта — добавляется в текст блока
+  const aspectFlavor = {
+    conjunction: {
+      love:   ['остро и лично', 'прямо и без условностей', 'с акцентом на близость к самому себе'],
+      work:   ['с полной личной включённостью', 'с предельной концентрацией на одном', 'на пике личного участия'],
+      energy: ['насыщенно и густо изнутри', 'с ощущением сжатого импульса', 'с плотным личным фоном']
+    },
+    sextile: {
+      love:   ['легко и без усилия', 'через тёплые приятные мелочи', 'через искренний ненапряжённый обмен'],
+      work:   ['с естественной поддержкой обстоятельств', 'через удачные совпадения и контакты', 'с лёгким попутным течением'],
+      energy: ['с приятным фоновым уровнем', 'мягко и устойчиво', 'через лёгкое восстановление']
+    },
+    trine: {
+      love:   ['с особенной лёгкостью и взаимностью', 'через гармонию настроений', 'с тёплым внутренним совпадением'],
+      work:   ['с заметной лёгкостью', 'на попутном ветре обстоятельств', 'в ясном и приятном темпе'],
+      energy: ['ровно и щедро', 'через естественный приток сил', 'в гармонии тела и ритма']
+    },
+    square: {
+      love:   ['с напряжением, которое стоит проговаривать', 'через столкновение разных желаний', 'через необходимость уступить и быть услышанным'],
+      work:   ['с заметным сопротивлением', 'через необходимость пересобрать план', 'через шероховатости, показывающие слабые места'],
+      energy: ['с лёгкой нервностью', 'на перетянутой внутренней струне', 'с фоном раздражения, требующим выпуска']
+    },
+    opposition: {
+      love:   ['через зеркало другого, в котором видно своё', 'через поиск баланса между «я» и «ты»', 'через диалог, в котором важна каждая сторона'],
+      work:   ['через столкновение с противоположной позицией', 'через необходимость учесть чужие интересы', 'через поиск компромисса между сторонами'],
+      energy: ['маятником между активностью и отдыхом', 'с ощущением разрыва, который нужно собрать', 'через борьбу разнонаправленных импульсов']
+    },
+    none: {
+      love:   ['ровно и без сильных акцентов', 'спокойно и фоном', 'без особенной интриги'],
+      work:   ['в рабочем фоне без особых пиков', 'размеренно, по плану', 'без сильных встряхиваний'],
+      energy: ['в среднем спокойном темпе', 'в привычном ритме', 'без всплесков и провалов']
+    }
+  };
+
+  // Описания фазы Луны для блока «совет»
+  const moonPhaseAdvice = {
+    'новолуние':           'сегодня хорошо тихо начинать новое и закладывать намерения, не торопясь сразу в открытое действие',
+    'растущий серп':       'сегодня полезно постепенно набирать темп и подкреплять начатое первыми конкретными шагами',
+    'первая четверть':     'сегодня день подталкивает к решительным действиям и проверке начатых планов на прочность',
+    'растущая луна':       'сегодня хорошо вкладываться в развитие уже начатого и не сбрасывать набранный темп',
+    'полнолуние':          'сегодня многое становится очевидным и проявленным — день показывает, что действительно созрело',
+    'убывающая луна':      'сегодня хорошо завершать, отпускать и расчищать пространство для следующего цикла',
+    'последняя четверть':  'сегодня полезно подводить итоги и трезво пересматривать то, что больше не работает',
+    'старая луна':         'сегодня лучше беречь силы и не запускать ничего громкого — это время внутренней тишины'
+  };
+
+  // Режим дня выбирается по знаку Луны и фазе
+  function pickDayMode(sky) {
+    const moonEl = ELEMENT_BY_SIGN[sky.sign.Moon];
+    if (sky.phaseName === 'полнолуние') return dayModes.find(m => m.key === 'balance');
+    if (sky.phaseName === 'новолуние')  return dayModes.find(m => m.key === 'momentum');
+    if (moonEl === 'fire')  return dayModes.find(m => m.key === 'momentum');
+    if (moonEl === 'earth') return dayModes.find(m => m.key === 'clarity');
+    if (moonEl === 'air')   return dayModes.find(m => m.key === 'connection');
+    // water
+    return sky.moonWaxing
+      ? dayModes.find(m => m.key === 'balance')
+      : dayModes.find(m => m.key === 'reset');
+  }
+
+  // Стихия конкретного транзитного знака — для подмеса элементных фраз
+  function transitElement(planet, sky) {
+    return ELEMENT_BY_SIGN[sky.sign[planet]];
+  }
+
+  // Сборка астрологического контекста для конкретного блока знака
+  function buildAstroContext(sign, signIndex, sky, type, planet) {
+    const mode = pickDayMode(sky);
+    const aspect = getAspect(natalSunLon(signIndex), sky.lon[planet]);
+    const retro  = sky.retrograde[planet];
+    const match  = elementMatch(sky.sign[planet], signIndex);
+
+    // Стабильный seed внутри типа: даёт разнообразие текста день ото дня,
+    // но не делает оценку «случайной» — она считается от аспекта.
+    const dateKey = getLocalDateKey();
+    const seed = hashString(`${dateKey}-${sign.key}-${type}-${aspect.name}`);
+
+    const tElement = elements[transitElement(planet, sky)];
+    const sElement = elements[sign.element];
+    const modality = modalities[sign.modality];
+
+    const flavor = aspectFlavor[aspect.name][type === 'advice' ? 'love' : type];
+
+    const score = starScore(aspect, retro, match);
+
+    return {
+      seed, mode, aspect, retro, match, score,
+      planet,
+      transitSignIdx: sky.sign[planet],
+      modeMood: mode.mood,
+      modeAdd: pick(mode.add, seed, 10),
+      core: pick(sign.loveCore, seed, 1),
+      workCore: pick(sign.workCore, seed, 2),
+      extraLove: pick(sign.loveCore, seed, 3),
+      extraWork: pick(sign.workCore, seed, 4),
+      extraEnergy: pick(tElement.energy, seed, 5),
+      elementLove: pick(tElement.love, seed, 6),     // <-- стихия транзитной планеты
+      elementWork: pick(tElement.work, seed, 7),
+      elementEnergy: pick(tElement.energy, seed, 8),
+      modalityStyle: pick(modality.style, seed, 9),
+      modalityAdvice: pick(modality.advice, seed, 11),
+      endingA: feminineEnding(sign),
+      flavor: pick(flavor, seed, 13),
+      transitSignRu: ZODIAC_RU[sky.sign[planet]],
+      planetRu: PLANET_RU[planet]
+    };
+  }
+
+  // Тип блока → правящая планета
+  const TYPE_RULER = { love:'Venus', work:'Mercury', energy:'Mars', advice:'Moon' };
+
+  function buildSection(sign, signIndex, sky, type) {
+    const planet = TYPE_RULER[type];
+    const ctx = buildAstroContext(sign, signIndex, sky, type, planet);
+    const end = pick(endings, ctx.seed, 1);
+    const tpl = pick(templates[type], ctx.seed, 2);
+
+    // Базовый текст из шаблона
+    let text = tpl(sign, ctx, end);
+
+    // Дополнение под планету и фазу
+    if (type === 'love') {
+      text += ` Венера сейчас в ${ctx.transitSignRu}${ctx.retro ? ' (ретроградная)' : ''} — это окрашивает чувства ${ctx.flavor}.`;
+    } else if (type === 'work') {
+      text += ` Меркурий в ${ctx.transitSignRu}${ctx.retro ? ' (ретроградный — лучше перепроверять)' : ''} ведёт дела ${ctx.flavor}.`;
+    } else if (type === 'energy') {
+      text += ` Марс в ${ctx.transitSignRu}${ctx.retro ? ' (ретроградный)' : ''} даёт тонус ${ctx.flavor}.`;
+    } else if (type === 'advice') {
+      const moonAdv = moonPhaseAdvice[sky.phaseName] || '';
+      text += ` Луна в ${ctx.transitSignRu}, ${sky.phaseName}: ${moonAdv}.`;
+    }
+
+    return { text, score: ctx.score };
+  }
+
+  function renderChips() {
+    chipsNav.innerHTML = signs.map(sign => `
+      <a class="chip" href="#sign-${sign.key}" data-chip="${sign.key}">${sign.cases.nom}</a>
+    `).join('');
+  }
+
+  function setupActiveChips() {
+    if (signObserver) {
+      signObserver.disconnect();
+    }
+
+    const chips = [...document.querySelectorAll('.chip')];
+    const sections = [...document.querySelectorAll('.sign-card')];
+
+    if (!chips.length || !sections.length) return;
+
+    const activateChip = (key) => {
+      chips.forEach(chip => {
+        chip.classList.toggle('active', chip.dataset.chip === key);
+      });
+    };
+
+    activateChip(signs[0].key);
+
+    signObserver = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+      if (visible[0]) {
+        activateChip(visible[0].target.dataset.sign);
+      }
+    }, {
+      rootMargin: '-20% 0px -55% 0px',
+      threshold: [0.2, 0.35, 0.5, 0.7]
+    });
+
+    sections.forEach(section => signObserver.observe(section));
+  }
+
+  function renderSkyCard(sky) {
+    const order = ['Sun','Moon','Mercury','Venus','Mars'];
+    skyPills.innerHTML = order.map(p => {
+      const deg = (sky.lon[p] % 30).toFixed(0);
+      const retro = sky.retrograde[p] ? '<span class="sky-retro" title="ретроградный">℞</span>' : '';
+      const extra = p === 'Moon' ? ` · ${sky.phaseShort}` : '';
+      return `<span class="sky-pill">
+        <span class="sky-glyph">${PLANET_GLYPH[p]}</span>
+        <span>${PLANET_RU[p]} — ${ZODIAC_NOM_RU[sky.sign[p]]} ${deg}°${extra}</span>${retro}
+      </span>`;
+    }).join('');
+
+    const moonEl = ELEMENT_BY_SIGN[sky.sign.Moon];
+    const moonElRu = { fire:'огня', earth:'земли', air:'воздуха', water:'воды' }[moonEl];
+    const retros = ['Mercury','Venus','Mars'].filter(p => sky.retrograde[p]).map(p => PLANET_RU[p]);
+    let hint = `Луна в стихии ${moonElRu}, ${sky.phaseName}. `;
+    if (retros.length) {
+      hint += `Ретроградны: ${retros.join(', ')} — в этих сферах сегодня полезнее проверять, чем разгонять.`;
+    } else {
+      hint += `Все ключевые планеты в прямом движении.`;
+    }
+    skyHint.textContent = hint;
+  }
+
+  function renderSigns() {
+    const now = new Date();
+    const sky = getSkyState(now);
+    const mode = pickDayMode(sky);
+
+    todayLabel.textContent = `Сегодня • ${formatDateRu(now)} • ${mode.title}`;
+    renderSkyCard(sky);
+
+    const html = signs.map((sign, index) => {
+      const love   = buildSection(sign, index, sky, 'love');
+      const work   = buildSection(sign, index, sky, 'work');
+      const energy = buildSection(sign, index, sky, 'energy');
+      const advice = buildSection(sign, index, sky, 'advice');
+
+      return `
+        <article class="card sign-card" id="sign-${sign.key}" data-sign="${sign.key}">
+          <div class="sign-head">
+            <div>
+              <h2 class="sign-name">${sign.cases.nom}</h2>
+              <div class="sign-dates">${sign.dates}</div>
+              <div class="sign-meta">
+                <span class="mini-pill">${elements[sign.element].label}</span>
+                <span class="mini-pill">${modalities[sign.modality].label}</span>
+                <span class="mini-pill">${sign.archetype}</span>
+              </div>
+            </div>
+            <div class="pill">${mode.title}</div>
+          </div>
+
+          <div class="blocks">
+            ${createBlock('Любовь', love.text, love.score)}
+            ${createBlock('Работа', work.text, work.score)}
+            ${createBlock('Энергия', energy.text, energy.score)}
+            ${createBlock('Совет дня', advice.text, advice.score)}
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    signsGrid.innerHTML = html;
+    setupActiveChips();
+    setStatus('прогнозы построены по реальным транзитам.');
+  }
+
+  function scheduleMidnightRefresh() {
+    if (midnightTimer) {
+      clearTimeout(midnightTimer);
+    }
+
+    const now = new Date();
+    const nextMidnight = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() + 1,
+      0, 0, 5, 0
+    );
+
+    const delay = nextMidnight.getTime() - now.getTime();
+
+    midnightTimer = setTimeout(() => {
+      renderSigns();
+      scheduleMidnightRefresh();
+    }, delay);
+  }
+
+  if (isIOS && !isInStandaloneMode) {
+    iosHint.hidden = false;
+  }
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    installBtn.hidden = false;
+    setStatus('можно установить приложение.');
+  });
+
+  window.addEventListener('appinstalled', () => {
+    installBtn.hidden = true;
+    deferredPrompt = null;
+    setStatus('приложение установлено.');
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (!deferredPrompt) {
+      if (isIOS) {
+        iosHint.hidden = false;
+        setStatus('на iPhone установка идет через Safari → Поделиться → На экран Домой.');
+      } else {
+        setStatus('установка пока недоступна в этом браузере.');
+      }
+      return;
+    }
+
+    deferredPrompt.prompt();
+    const choice = await deferredPrompt.userChoice;
+    setStatus('результат установки: ' + choice.outcome);
+    deferredPrompt = null;
+    installBtn.hidden = true;
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => {
+        if (!isIOS) {
+          setStatus('сайт готов к автономной работе.');
+        }
+      })
+      .catch(() => setStatus('не удалось зарегистрировать Service Worker.'));
+  } else {
+    setStatus('браузер не поддерживает Service Worker.');
+  }
+
+  renderChips();
+  renderSigns();
+  scheduleMidnightRefresh();
+})();
+</script>
+</body>
+</html>
