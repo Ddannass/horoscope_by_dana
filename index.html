@@ -259,6 +259,93 @@
       line-height:1.45;
     }
 
+    .birth-card {
+      padding:14px;
+      display:grid;
+      gap:10px;
+    }
+
+    .birth-title {
+      margin:0;
+      font-size:14px;
+      color:var(--muted);
+      font-weight:600;
+    }
+
+    .birth-hint {
+      margin:0;
+      font-size:13px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+
+    .birth-controls {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      align-items:center;
+    }
+
+    .birth-input {
+      flex:1 1 160px;
+      min-height:38px;
+      padding:6px 10px;
+      border-radius:10px;
+      border:1px solid var(--border);
+      background:var(--surface3);
+      color:var(--text);
+      font-size:14px;
+      font-family:inherit;
+    }
+
+    .birth-btn {
+      min-height:38px;
+      padding:6px 14px;
+      border-radius:10px;
+      border:1px solid var(--primary);
+      background:var(--primary);
+      color:var(--inv);
+      font-size:14px;
+      font-weight:600;
+      cursor:pointer;
+      font-family:inherit;
+    }
+
+    .birth-btn-link {
+      background:transparent;
+      border:none;
+      color:var(--primary);
+      cursor:pointer;
+      font-size:13px;
+      padding:0;
+      text-decoration:underline;
+      font-family:inherit;
+    }
+
+    .birth-info {
+      margin:0;
+      font-size:14px;
+      color:var(--text);
+      font-weight:600;
+    }
+
+    .sign-card.own-sign {
+      border:1px solid var(--primary);
+      box-shadow:0 0 0 3px var(--primary-soft);
+    }
+
+    .own-badge {
+      display:inline-block;
+      padding:3px 8px;
+      border-radius:999px;
+      background:var(--primary);
+      color:var(--inv);
+      font-size:11px;
+      font-weight:700;
+      margin-left:6px;
+      vertical-align:middle;
+    }
+
     .nav-title {
       margin:0;
       font-size:14px;
@@ -486,6 +573,11 @@
     </div>
   </section>
 
+  <section class="card birth-card" aria-label="Твой знак">
+    <p class="birth-title">Твой знак</p>
+    <div id="birthWrapper"></div>
+  </section>
+
   <section class="card sky-card" aria-label="Небо сегодня">
     <p class="sky-title">Небо сегодня</p>
     <div class="sky-pills" id="skyPills"></div>
@@ -519,6 +611,7 @@
   const chipsNav = document.getElementById('chipsNav');
   const skyPills = document.getElementById('skyPills');
   const skyHint = document.getElementById('skyHint');
+  const birthWrapper = document.getElementById('birthWrapper');
 
   let deferredPrompt = null;
   let theme = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -1038,6 +1131,46 @@
     return signIndex * 30 + 15;
   }
 
+  // ===== Дата рождения =====
+  const BIRTH_KEY = 'horoscope_birth_date';
+
+  function loadBirthDate() {
+    try {
+      const v = localStorage.getItem(BIRTH_KEY);
+      if (!v) return null;
+      // Парсим YYYY-MM-DD как локальную дату в полдень
+      const m = v.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+      if (!m) return null;
+      const d = new Date(+m[1], +m[2] - 1, +m[3], 12, 0, 0);
+      if (isNaN(d.getTime())) return null;
+      return d;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function saveBirthDate(dateStr) {
+    try { localStorage.setItem(BIRTH_KEY, dateStr); } catch (e) {}
+  }
+
+  function clearBirthDate() {
+    try { localStorage.removeItem(BIRTH_KEY); } catch (e) {}
+  }
+
+  function getNatalSunData() {
+    const d = loadBirthDate();
+    if (!d) return null;
+    const lon = normalizeLon(geoEclLon('Sun', d));
+    const signIndex = Math.floor(lon / 30);
+    return { date: d, lon, signIndex, signKey: signs[signIndex].key };
+  }
+
+  function formatBirthDate(d) {
+    return new Intl.DateTimeFormat('ru-RU', {
+      day: 'numeric', month: 'long', year: 'numeric'
+    }).format(d);
+  }
+
   // Звёздная оценка из аспекта + ретроградности
   function starScore(aspect, retrograde, elementMatch) {
     let s = 3;
@@ -1126,9 +1259,12 @@
   }
 
   // Сборка астрологического контекста для конкретного блока знака
-  function buildAstroContext(sign, signIndex, sky, type, planet) {
+  function buildAstroContext(sign, signIndex, sky, type, planet, natal) {
     const mode = pickDayMode(sky);
-    const aspect = getAspect(natalSunLon(signIndex), sky.lon[planet]);
+    // Если есть натальная дата и это знак пользователя — используем точную долготу
+    const useExact = natal && natal.signIndex === signIndex;
+    const sunLon = useExact ? natal.lon : natalSunLon(signIndex);
+    const aspect = getAspect(sunLon, sky.lon[planet]);
     const retro  = sky.retrograde[planet];
     const match  = elementMatch(sky.sign[planet], signIndex);
 
@@ -1171,9 +1307,9 @@
   // Тип блока → правящая планета
   const TYPE_RULER = { love:'Venus', work:'Mercury', energy:'Mars', advice:'Moon' };
 
-  function buildSection(sign, signIndex, sky, type) {
+  function buildSection(sign, signIndex, sky, type, natal) {
     const planet = TYPE_RULER[type];
-    const ctx = buildAstroContext(sign, signIndex, sky, type, planet);
+    const ctx = buildAstroContext(sign, signIndex, sky, type, planet, natal);
     const end = pick(endings, ctx.seed, 1);
     const tpl = pick(templates[type], ctx.seed, 2);
 
@@ -1195,8 +1331,9 @@
     return { text, score: ctx.score };
   }
 
-  function renderChips() {
-    chipsNav.innerHTML = signs.map(sign => `
+  function renderChips(list) {
+    const arr = list || signs;
+    chipsNav.innerHTML = arr.map(sign => `
       <a class="chip" href="#sign-${sign.key}" data-chip="${sign.key}">${sign.cases.nom}</a>
     `).join('');
   }
@@ -1217,7 +1354,7 @@
       });
     };
 
-    activateChip(signs[0].key);
+    activateChip(chips[0].dataset.chip);
 
     signObserver = new IntersectionObserver((entries) => {
       const visible = entries
@@ -1234,6 +1371,42 @@
 
     sections.forEach(section => signObserver.observe(section));
   }
+
+  function renderBirthCard(natal) {
+    if (natal) {
+      const deg = (natal.lon % 30).toFixed(1);
+      birthWrapper.innerHTML = `
+        <p class="birth-info">☉ ${signs[natal.signIndex].cases.nom} ${deg}° · ${formatBirthDate(natal.date)}</p>
+        <button id="birthClearBtn" class="birth-btn-link" type="button">Изменить дату</button>
+      `;
+    } else {
+      const today = new Date();
+      const maxAttr = today.toISOString().slice(0, 10);
+      birthWrapper.innerHTML = `
+        <p class="birth-hint">Укажи дату рождения — натальное Солнце посчитается точно (а не как середина знака), и твой знак появится наверху списка. Дата хранится локально в браузере и никуда не отправляется.</p>
+        <div class="birth-controls">
+          <input type="date" id="birthInput" class="birth-input" max="${maxAttr}" />
+          <button id="birthSaveBtn" class="birth-btn" type="button">Сохранить</button>
+        </div>
+      `;
+    }
+  }
+
+  // Делегирование событий на контейнере birthWrapper
+  birthWrapper.addEventListener('click', (e) => {
+    const t = e.target;
+    if (t && t.id === 'birthSaveBtn') {
+      const inp = document.getElementById('birthInput');
+      const v = inp && inp.value;
+      if (v && /^\d{4}-\d{2}-\d{2}$/.test(v)) {
+        saveBirthDate(v);
+        renderSigns();
+      }
+    } else if (t && t.id === 'birthClearBtn') {
+      clearBirthDate();
+      renderSigns();
+    }
+  });
 
   function renderSkyCard(sky) {
     const order = ['Sun','Moon','Mercury','Venus','Mars'];
@@ -1263,21 +1436,38 @@
     const now = new Date();
     const sky = getSkyState(now);
     const mode = pickDayMode(sky);
+    const natal = getNatalSunData();
 
     todayLabel.textContent = `Сегодня • ${formatDateRu(now)} • ${mode.title}`;
+    renderBirthCard(natal);
     renderSkyCard(sky);
 
-    const html = signs.map((sign, index) => {
-      const love   = buildSection(sign, index, sky, 'love');
-      const work   = buildSection(sign, index, sky, 'work');
-      const energy = buildSection(sign, index, sky, 'energy');
-      const advice = buildSection(sign, index, sky, 'advice');
+    // Сохраняем исходный индекс каждого знака (для аспектов),
+    // но порядок отображения — со «своим» знаком первым.
+    const order = signs.map((s, i) => ({ sign: s, index: i }));
+    if (natal) {
+      const ownIdx = order.findIndex(x => x.index === natal.signIndex);
+      if (ownIdx > 0) {
+        const [own] = order.splice(ownIdx, 1);
+        order.unshift(own);
+      }
+    }
+
+    const html = order.map(({ sign, index }) => {
+      const love   = buildSection(sign, index, sky, 'love',   natal);
+      const work   = buildSection(sign, index, sky, 'work',   natal);
+      const energy = buildSection(sign, index, sky, 'energy', natal);
+      const advice = buildSection(sign, index, sky, 'advice', natal);
+
+      const isOwn = natal && natal.signIndex === index;
+      const ownBadge = isOwn ? '<span class="own-badge">твой знак</span>' : '';
+      const ownClass = isOwn ? ' own-sign' : '';
 
       return `
-        <article class="card sign-card" id="sign-${sign.key}" data-sign="${sign.key}">
+        <article class="card sign-card${ownClass}" id="sign-${sign.key}" data-sign="${sign.key}">
           <div class="sign-head">
             <div>
-              <h2 class="sign-name">${sign.cases.nom}</h2>
+              <h2 class="sign-name">${sign.cases.nom}${ownBadge}</h2>
               <div class="sign-dates">${sign.dates}</div>
               <div class="sign-meta">
                 <span class="mini-pill">${elements[sign.element].label}</span>
@@ -1299,6 +1489,7 @@
     }).join('');
 
     signsGrid.innerHTML = html;
+    renderChips(order.map(o => o.sign));
     setupActiveChips();
     setStatus('прогнозы построены по реальным транзитам.');
   }
