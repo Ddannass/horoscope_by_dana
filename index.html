@@ -387,6 +387,50 @@
       font-weight:600;
     }
 
+    .block-detail {
+      margin-top:10px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:var(--surface3);
+      border:1px solid var(--border);
+    }
+
+    .block-detail summary {
+      cursor:pointer;
+      font-size:12px;
+      color:var(--text-muted);
+      font-weight:500;
+      user-select:none;
+      list-style:none;
+      display:flex;
+      align-items:center;
+      gap:6px;
+    }
+
+    .block-detail summary::before {
+      content:'⊕';
+      color:var(--text-muted);
+      font-weight:600;
+      font-size:13px;
+    }
+
+    .block-detail[open] summary::before {
+      content:'⊖';
+    }
+
+    .block-detail summary::-webkit-details-marker {
+      display:none;
+    }
+
+    .block-detail-body {
+      margin-top:8px;
+      font-size:12.5px;
+      line-height:1.5;
+      color:var(--text);
+      font-style:italic;
+      opacity:0.92;
+    }
+
     .natal-title {
       margin:0;
       font-size:14px;
@@ -1077,7 +1121,12 @@
     return '★'.repeat(score) + '☆'.repeat(5 - score);
   }
 
-  function createBlock(title, text, score) {
+  function createBlock(title, text, score, detail) {
+    const detailHtml = detail ? `
+      <details class="block-detail">
+        <summary>Астрономия дня</summary>
+        <div class="block-detail-body">${detail}</div>
+      </details>` : '';
     return `
       <div class="block">
         <div class="block-top">
@@ -1088,6 +1137,7 @@
           <div class="block-score" aria-label="Оценка ${score} из 5">${renderScore(score)}</div>
         </div>
         <div class="block-text">${text}</div>
+        ${detailHtml}
       </div>
     `;
   }
@@ -2719,8 +2769,9 @@
     const end = pick(endings, seed, 1);
     const tpl = pick(templates[type], seed, 2);
     let text = tpl(sign, ctx, end);
+    let detailParts = [];
 
-    // Подпись с самым точным аспектом
+    // Подпись с самым точным аспектом — идёт в раскрывающуюся астрологическую выкладку
     if (best) {
       const tSign = ZODIAC_RU[Math.floor(best.transitLon / 30)];
       const nSign = ZODIAC_RU[Math.floor(best.natalLon / 30)];
@@ -2743,7 +2794,7 @@
       );
       const tt = timingText(timing);
       const ttStr = tt ? `, ${tt}` : '';
-      text += ` ${transitRu} в ${tSign}${retro}${houseStr} в ${aspRu} к ${natalRu} в ${nSign}${precStr}${ttStr} — ${flavor}.`;
+      detailParts.push(`${transitRu} в ${tSign}${retro}${houseStr} в ${aspRu} к ${natalRu} в ${nSign}${precStr}${ttStr} — ${flavor}.`);
     } else {
       // Нет аспекта в орбисе — описываем главного транзитного «правителя» блока и его дом
       const planet = TYPE_RULER[type];
@@ -2752,10 +2803,10 @@
       const retro = sky.retrograde[planet] ? ` (${retroAdj(planet)})` : '';
       const house = planetHouse(sky.lon[planet], natal);
       const houseStr = house ? ` — в твоём ${house}-м доме` : '';
-      text += ` ${transitRu} в ${tSign}${retro}${houseStr}, точных аспектов к твоей карте сегодня нет — день идёт ровно.`;
+      detailParts.push(`${transitRu} в ${tSign}${retro}${houseStr}, точных аспектов к твоей натальной карте сегодня нет — день идёт ровно.`);
     }
 
-    // Долгосрочный фон: аспект Юпитера или Сатурна
+    // Долгосрочный фон: аспект Юпитера или Сатурна — тоже в детали
     const slow = findSlowAspect(sky, natal, type, used && used.slow);
     if (slow && used) used.slow.add(slow.key);
     if (slow) {
@@ -2780,17 +2831,17 @@
       // Слегка снижаем оценку при напряжении Сатурна и слегка повышаем при тригонах Юпитера
       if (slow.aspect.quality === 'tense' && slow.transit === 'Saturn') score = Math.max(1, score - 1);
       if ((slow.aspect.quality === 'great' || slow.aspect.quality === 'good') && slow.transit === 'Jupiter') score = Math.min(5, score + 1);
-      text += ` Долгосрочный фон: ${transitRu} в ${tSign}${retro}${houseStr} в ${aspRu} к ${natalRu} в ${nSign}${ttStr} — ${tone}.`;
+      detailParts.push(`Долгосрочный фон: ${transitRu} в ${tSign}${retro}${houseStr} в ${aspRu} к ${natalRu} в ${nSign}${ttStr} — ${tone}.`);
     }
 
-    // Для совета добавляем фазу Луны
+    // Для совета добавляем фазу Луны прямо в основной текст — это базовое и понятное
     if (type === 'advice') {
       const moonAdvArr = moonPhaseAdvice[sky.phaseName];
       const moonAdv = moonAdvArr ? pick(moonAdvArr, seed, 17) : '';
       if (moonAdv) text += ` ${ucFirst(moonAdv)}.`;
     }
 
-    return { text, score };
+    return { text, detail: detailParts.join(' '), score };
   }
 
   function renderChips(list) {
@@ -3165,10 +3216,10 @@
           </div>
 
           <div class="blocks">
-            ${createBlock('Любовь', love.text, love.score)}
-            ${createBlock('Работа', work.text, work.score)}
-            ${createBlock('Энергия', energy.text, energy.score)}
-            ${createBlock('Совет дня', advice.text, advice.score)}
+            ${createBlock('Любовь', love.text, love.score, love.detail)}
+            ${createBlock('Работа', work.text, work.score, work.detail)}
+            ${createBlock('Энергия', energy.text, energy.score, energy.detail)}
+            ${createBlock('Совет дня', advice.text, advice.score, advice.detail)}
           </div>
         </article>
       `;
